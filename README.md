@@ -1,12 +1,13 @@
-# Plano Cartesiano Interativo — Atelier Function V1.2
+# Plano Cartesiano Interativo — Atelier Function
 
-Versão para GitHub Pages.
+Projeto pronto para GitHub Pages.
 
-Ajustes desta versão:
+Ajustes incluídos:
 - Layout usando toda a tela do usuário em desktop.
 - Gráfico maior e responsivo.
-- Cabeçalho com logo Atelier Function visível na tela.
-- Logo Atelier Function também no PDF.
+- Cabeçalho com a logo correta do Atelier Function visível na tela.
+- Logo do Atelier Function também no PDF.
+- Remoção de qualquer referência visual à versão na tela do usuário e no PDF.
 - PDF em formato paisagem, com gráfico, análise matemática e tabela de pontos.
 - Coordenadas dos pontos no gráfico com identificação P1, P2, P3...
 - Reposicionamento automático das etiquetas para reduzir sobreposição.
