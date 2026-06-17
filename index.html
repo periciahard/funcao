@@ -19,148 +19,189 @@
 
       .container {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
+        gap: 10px;
         background-color: #f5f5f5;
-        padding: 15px;
+        padding: 10px;
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        width: 95vw;
-        max-width: 1050px;
-        min-height: 90vh;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.18);
+        width: 96vw;
+        max-width: 980px;
+        min-height: 86vh;
         position: relative;
       }
 
-      .left-area {
+      .left-panel {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        align-items: flex-start;
+        flex: 1 1 520px;
+        min-width: 0;
       }
 
       .graph-container {
         position: relative;
-        width: 500px;
-        height: 500px;
-        max-width: 60vw;
-        max-height: 60vw;
+        width: min(60vw, 500px);
+        aspect-ratio: 1 / 1;
         background-color: #ffffff;
         border: 2px solid #000;
+        overflow: hidden;
+        touch-action: none;
       }
 
       canvas {
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100%;
+      }
+
+      #cursorTooltip {
+        position: absolute;
+        display: none;
+        pointer-events: none;
+        background: rgba(0, 0, 0, 0.78);
+        color: #fff;
+        padding: 4px 7px;
+        border-radius: 5px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 10;
+        transform: translate(8px, 12px);
       }
 
       .controls {
         display: flex;
         flex-direction: column;
-        width: 360px;
-        max-width: 38vw;
+        gap: 7px;
+        width: 310px;
+        flex: 0 0 310px;
+        font-size: 13px;
       }
 
       .expression {
-        font-size: 1.25em;
-        margin-bottom: 8px;
+        font-size: 1.05em;
         font-weight: bold;
         text-align: center;
+        background: #fff;
+        border-radius: 8px;
+        padding: 7px;
       }
 
       .additional-info {
-        font-size: 0.9em;
-        color: red;
+        font-size: 0.82em;
+        color: #b00000;
         text-align: center;
-        margin-top: 5px;
+      }
+
+      .tangent-box,
+      .sliders,
+      .table,
+      .point-input,
+      .buttons {
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+        padding: 7px;
+      }
+
+      .tangent-box h3,
+      .table h3 {
+        margin: 0 0 5px 0;
+        font-size: 0.95em;
+        text-align: center;
       }
 
       .tangent-box {
-        background: #ffffff;
-        border: 1px solid #cccccc;
-        border-radius: 8px;
-        padding: 10px;
-        margin: 10px 0;
-        font-size: 0.92em;
-        line-height: 1.45;
-      }
-
-      .tangent-box h3 {
-        margin: 0 0 6px 0;
-        font-size: 1em;
-        text-align: center;
+        line-height: 1.25;
       }
 
       .tangent-line {
         font-weight: bold;
         text-align: center;
-        margin-top: 4px;
+        margin-top: 3px;
       }
 
       .slider-container {
-        display: flex;
+        display: grid;
+        grid-template-columns: 95px 1fr 42px;
+        gap: 5px;
         align-items: center;
-        justify-content: space-between;
-        gap: 6px;
         margin-bottom: 4px;
       }
 
-      .slider-container label { min-width: 105px; }
-      .slider-container span { min-width: 44px; text-align: right; }
+      .slider-container input[type="range"] {
+        width: 100%;
+      }
 
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 5px;
-        font-size: 0.85em;
-        background: white;
+        font-size: 0.78em;
       }
 
-      th, td {
+      th,
+      td {
         border: 1px solid #000;
-        padding: 4px;
+        padding: 3px;
         text-align: center;
       }
 
+      .table {
+        max-height: 190px;
+        overflow: auto;
+      }
+
+      .highlight {
+        background-color: #eeeeee;
+      }
+
       .point-input {
-        margin-top: 10px;
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
         gap: 5px;
       }
 
       .point-input input {
-        width: 70px;
+        width: 100%;
+        min-width: 0;
       }
 
       .buttons {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 5px;
-        margin-top: 10px;
-        flex-wrap: wrap;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
       }
 
       button {
         cursor: pointer;
-        padding: 6px 8px;
+        border: 1px solid #999;
+        border-radius: 6px;
+        background: #f7f7f7;
+        padding: 5px 7px;
       }
 
-      .highlight { background-color: lightgray; }
+      .top-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
 
       .image-container {
         position: absolute;
-        bottom: 35px;
-        right: 10px;
-        margin: 10px;
+        bottom: 8px;
+        right: 8px;
+        opacity: 0.75;
       }
 
       .image-container img {
-        width: 220px;
-        max-width: 25vw;
+        width: 120px;
+        max-width: 22vw;
       }
 
       .version-tag {
@@ -172,37 +213,41 @@
         padding: 6px 10px;
         border-radius: 6px;
         font-size: 12px;
-        font-family: Arial, sans-serif;
         z-index: 9999;
         opacity: 0.9;
       }
 
-      @media (max-width: 850px) {
+      @media (max-width: 820px) {
         body { align-items: flex-start; }
         .container {
           flex-direction: column;
-          min-height: auto;
+          width: 100vw;
+          min-height: 100vh;
+          border-radius: 0;
         }
         .graph-container {
-          width: 90vw;
-          height: 90vw;
-          max-width: 500px;
-          max-height: 500px;
-        }
-        .controls {
           width: 100%;
           max-width: none;
         }
+        .controls {
+          width: 100%;
+          flex: 0 0 auto;
+        }
         .image-container { display: none; }
+        .table { max-height: 150px; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="left-area">
-        <button id="createPointBtn">Criar Ponto</button>
-        <div class="graph-container">
+      <div class="left-panel">
+        <div class="top-actions">
+          <button id="createPointBtn">Criar ponto no gráfico</button>
+          <small>Dê dois cliques em um ponto para selecioná-lo.</small>
+        </div>
+        <div class="graph-container" id="graphContainer">
           <canvas id="graphCanvas" width="500" height="500"></canvas>
+          <div id="cursorTooltip"></div>
         </div>
       </div>
 
@@ -217,12 +262,12 @@
 
         <div id="sliders" class="sliders">
           <div class="slider-container">
-            <label for="aRange">Coeficiente a:</label>
+            <label for="aRange">Coef. a:</label>
             <input type="range" id="aRange" min="-5" max="5" step="0.1" value="1" disabled />
             <span id="aValue">1</span>
           </div>
           <div class="slider-container">
-            <label for="bRange">Coeficiente b:</label>
+            <label for="bRange">Coef. b:</label>
             <input type="range" id="bRange" min="-5" max="5" step="0.1" value="0" disabled />
             <span id="bValue">0</span>
           </div>
@@ -239,7 +284,7 @@
         </div>
 
         <div class="table">
-          <h3 style="text-align: center">Tabela de Valores</h3>
+          <h3>Tabela de Valores</h3>
           <table>
             <thead>
               <tr><th>x</th><th>y</th></tr>
@@ -249,14 +294,14 @@
         </div>
 
         <div class="point-input">
-          <input type="number" id="xPoint" placeholder="x" step="0.1" />
-          <input type="number" id="yPoint" placeholder="y" step="0.1" />
-          <button onclick="addPoint()">Adicionar Ponto</button>
+          <input type="number" id="xPoint" placeholder="x" />
+          <input type="number" id="yPoint" placeholder="y" />
+          <button onclick="addPoint()">Adicionar</button>
         </div>
 
         <div class="buttons">
-          <button onclick="drawLineFromPoints()">Traçar Reta pelos Pontos</button>
-          <button onclick="clearPoints()">Apagar Dados</button>
+          <button onclick="drawLineFromPoints()">Traçar reta</button>
+          <button onclick="clearPoints()">Apagar dados</button>
         </div>
       </div>
 
@@ -280,28 +325,43 @@
       let a = 1;
       let b = 0;
       let movingPoint = null;
+      let creatingPoint = false;
 
       const canvas = document.getElementById("graphCanvas");
       const ctx = canvas.getContext("2d");
+      const graphContainer = document.getElementById("graphContainer");
+      const cursorTooltip = document.getElementById("cursorTooltip");
 
-      document.getElementById("versionTag").textContent = `Plano Cartesiano Interativo • ${APP_VERSION}`;
+      document.getElementById("versionTag").textContent =
+        `Plano Cartesiano Interativo • ${APP_VERSION}`;
 
       canvas.addEventListener("mousedown", handleMouseDown);
       canvas.addEventListener("mouseup", handleMouseUp);
+      canvas.addEventListener("mouseleave", () => {
+        movingPoint = null;
+        hideTooltip();
+      });
       canvas.addEventListener("mousemove", handleMouseMove);
-      canvas.addEventListener("mouseleave", handleMouseUp);
       canvas.addEventListener("dblclick", handleDoubleClick);
+      canvas.addEventListener("click", handleCanvasClick);
+
+      window.addEventListener("resize", drawGraph);
 
       function saveState() {
-        const selectedPointIndexes = selectedPoints.map((point) => points.indexOf(point));
-        const state = { zoomLevel, points, selectedPointIndexes, lineDrawn, a, b };
+        const state = {
+          zoomLevel,
+          points,
+          selectedPointIndexes: selectedPoints.map((p) => points.indexOf(p)),
+          lineDrawn,
+          a,
+          b,
+        };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
       function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return;
-
         try {
           const state = JSON.parse(saved);
           zoomLevel = state.zoomLevel ?? 1;
@@ -317,10 +377,39 @@
         }
       }
 
-      function getMouseGraphCoordinates(event) {
-        const rect = canvas.getBoundingClientRect();
-        const offsetX = ((event.clientX - rect.left) / rect.width) * canvas.width;
-        const offsetY = ((event.clientY - rect.top) / rect.height) * canvas.height;
+      function syncControls() {
+        document.getElementById("zoomSelect").value = String(zoomLevel);
+        document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
+
+        if (a !== null) {
+          document.getElementById("aRange").value = a;
+          document.getElementById("aValue").textContent = a.toFixed(2);
+        } else {
+          document.getElementById("aValue").textContent = "--";
+        }
+
+        document.getElementById("bRange").value = b;
+        document.getElementById("bValue").textContent = b.toFixed(2);
+        document.getElementById("aRange").disabled = !lineDrawn || a === null;
+        document.getElementById("bRange").disabled = !lineDrawn || a === null;
+      }
+
+      function formatNumber(value) {
+        if (!Number.isFinite(value)) return "--";
+        return value.toFixed(2);
+      }
+
+      function graphToCanvas(point) {
+        const scale = 50 * zoomLevel;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        return {
+          x: centerX + point.x * scale,
+          y: centerY - point.y * scale,
+        };
+      }
+
+      function canvasToGraph(offsetX, offsetY) {
         const scale = 50 * zoomLevel;
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
@@ -330,16 +419,57 @@
         };
       }
 
-      function findClickedPoint(x, y) {
-        return points.find((point) => {
-          const dist = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
-          return dist < 0.2;
-        });
+      function getEventCanvasPosition(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          offsetX: (e.clientX - rect.left) * scaleX,
+          offsetY: (e.clientY - rect.top) * scaleY,
+          cssX: e.clientX - rect.left,
+          cssY: e.clientY - rect.top,
+        };
       }
 
-      function handleMouseDown(event) {
-        const clicked = getMouseGraphCoordinates(event);
-        const clickedPoint = findClickedPoint(clicked.x, clicked.y);
+      function updateTangentInfo() {
+        const tangentInfo = document.getElementById("tangentInfo");
+        if (!lineDrawn || selectedPoints.length !== 2) {
+          tangentInfo.innerHTML = "Selecione dois pontos e trace a reta.";
+          return;
+        }
+
+        const p1 = selectedPoints[0];
+        const p2 = selectedPoints[1];
+        const deltaX = p2.x - p1.x;
+        const deltaY = p2.y - p1.y;
+
+        if (Math.abs(deltaX) < 0.000001) {
+          tangentInfo.innerHTML = `
+            <div>A reta é vertical.</div>
+            <div>Δx = 0. A tangente não está definida.</div>
+          `;
+          return;
+        }
+
+        const tangent = deltaY / deltaX;
+        tangentInfo.innerHTML = `
+          <div>Δy = y₂ - y₁ = ${formatNumber(deltaY)}</div>
+          <div>Δx = x₂ - x₁ = ${formatNumber(deltaX)}</div>
+          <div class="tangent-line">tg(α) = Δy / Δx = ${formatNumber(deltaY)} / ${formatNumber(deltaX)} = ${formatNumber(tangent)}</div>
+          <div>Coeficiente angular: a = ${formatNumber(tangent)}</div>
+        `;
+      }
+
+      function handleMouseDown(e) {
+        const pos = getEventCanvasPosition(e);
+        const clicked = canvasToGraph(pos.offsetX, pos.offsetY);
+        let clickedPoint = null;
+
+        points.forEach((point) => {
+          const dist = Math.hypot(point.x - clicked.x, point.y - clicked.y);
+          if (dist < 0.2) clickedPoint = point;
+        });
+
         if (clickedPoint) movingPoint = clickedPoint;
       }
 
@@ -347,34 +477,90 @@
         movingPoint = null;
       }
 
-      function handleMouseMove(event) {
-        if (!movingPoint) return;
+      function handleMouseMove(e) {
+        const pos = getEventCanvasPosition(e);
+        const graphPoint = canvasToGraph(pos.offsetX, pos.offsetY);
 
-        const newPosition = getMouseGraphCoordinates(event);
-        movingPoint.x = newPosition.x;
-        movingPoint.y = newPosition.y;
+        if (movingPoint) {
+          movingPoint.x = graphPoint.x;
+          movingPoint.y = graphPoint.y;
 
-        if (selectedPoints.includes(movingPoint)) {
-          calculateLineFromSelectedPoints();
+          if (selectedPoints.includes(movingPoint)) {
+            calculateLineFromSelectedPoints();
+          }
+
+          refreshAll();
+          saveState();
+        } else {
+          updateLineTooltip(pos);
         }
-
-        refreshAll();
-        saveState();
       }
 
-      function handleDoubleClick(event) {
-        const clicked = getMouseGraphCoordinates(event);
-        const clickedPoint = findClickedPoint(clicked.x, clicked.y);
+      function handleDoubleClick(e) {
+        const pos = getEventCanvasPosition(e);
+        const clicked = canvasToGraph(pos.offsetX, pos.offsetY);
+        let clickedPoint = null;
+
+        points.forEach((point) => {
+          const dist = Math.hypot(point.x - clicked.x, point.y - clicked.y);
+          if (dist < 0.2) clickedPoint = point;
+        });
+
         if (!clickedPoint) return;
 
         if (selectedPoints.includes(clickedPoint)) {
-          selectedPoints = selectedPoints.filter((point) => point !== clickedPoint);
+          selectedPoints = selectedPoints.filter((p) => p !== clickedPoint);
         } else if (selectedPoints.length < 2) {
           selectedPoints.push(clickedPoint);
         }
 
         refreshAll();
         saveState();
+      }
+
+      function handleCanvasClick(e) {
+        if (!creatingPoint) return;
+        const pos = getEventCanvasPosition(e);
+        const point = canvasToGraph(pos.offsetX, pos.offsetY);
+        points.push(point);
+        creatingPoint = false;
+        document.getElementById("createPointBtn").textContent = "Criar ponto no gráfico";
+        refreshAll();
+        saveState();
+      }
+
+      function updateLineTooltip(pos) {
+        if (!lineDrawn) {
+          hideTooltip();
+          return;
+        }
+
+        const graphPoint = canvasToGraph(pos.offsetX, pos.offsetY);
+        let linePoint;
+        let distancePx;
+
+        if (a === null) {
+          linePoint = { x: b, y: graphPoint.y };
+          const screen = graphToCanvas(linePoint);
+          distancePx = Math.abs(pos.offsetX - screen.x);
+        } else {
+          linePoint = { x: graphPoint.x, y: a * graphPoint.x + b };
+          const screen = graphToCanvas(linePoint);
+          distancePx = Math.abs(pos.offsetY - screen.y);
+        }
+
+        if (distancePx <= 10) {
+          cursorTooltip.style.left = `${pos.cssX}px`;
+          cursorTooltip.style.top = `${pos.cssY}px`;
+          cursorTooltip.textContent = `(${formatNumber(linePoint.x)}, ${formatNumber(linePoint.y)})`;
+          cursorTooltip.style.display = "block";
+        } else {
+          hideTooltip();
+        }
+      }
+
+      function hideTooltip() {
+        cursorTooltip.style.display = "none";
       }
 
       function drawGrid(scale) {
@@ -420,12 +606,10 @@
       }
 
       function drawPoints(scale) {
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-
         points.forEach((point) => {
+          const screen = graphToCanvas(point);
           ctx.beginPath();
-          ctx.arc(centerX + point.x * scale, centerY - point.y * scale, 5, 0, Math.PI * 2);
+          ctx.arc(screen.x, screen.y, 5, 0, Math.PI * 2);
           ctx.fillStyle = selectedPoints.includes(point) ? "orange" : "blue";
           ctx.fill();
 
@@ -437,22 +621,26 @@
         });
       }
 
-      function drawLine(scale) {
-        if (!lineDrawn) return;
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
+      function calculateLineFromSelectedPoints() {
+        if (selectedPoints.length !== 2) return false;
+        const p1 = selectedPoints[0];
+        const p2 = selectedPoints[1];
 
-        if (a === null) {
-          ctx.moveTo(canvas.width / 2 + b * scale, 0);
-          ctx.lineTo(canvas.width / 2 + b * scale, canvas.height);
+        if (Math.abs(p1.x - p2.x) > 0.000001) {
+          a = (p2.y - p1.y) / (p2.x - p1.x);
+          b = p1.y - a * p1.x;
         } else {
-          const startX = -canvas.width / 2 / scale;
-          const endX = canvas.width / 2 / scale;
-          ctx.moveTo(canvas.width / 2 + startX * scale, canvas.height / 2 - (a * startX + b) * scale);
-          ctx.lineTo(canvas.width / 2 + endX * scale, canvas.height / 2 - (a * endX + b) * scale);
+          a = null;
+          b = p1.x;
         }
-        ctx.stroke();
+        lineDrawn = true;
+        return true;
+      }
+
+      function drawLineFromPoints() {
+        if (!calculateLineFromSelectedPoints()) return;
+        refreshAll();
+        saveState();
       }
 
       function drawGraph() {
@@ -460,45 +648,94 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawGrid(scale);
         drawLine(scale);
+        drawTangentTriangle();
         drawPoints(scale);
       }
 
-      function calculateLineFromSelectedPoints() {
-        if (selectedPoints.length !== 2) return false;
-        const point1 = selectedPoints[0];
-        const point2 = selectedPoints[1];
+      function drawLine(scale) {
+        if (!lineDrawn) return;
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
 
-        if (Math.abs(point1.x - point2.x) > 0.000001) {
-          a = (point2.y - point1.y) / (point2.x - point1.x);
-          b = point1.y - a * point1.x;
+        const startX = -canvas.width / 2 / scale;
+        const endX = canvas.width / 2 / scale;
+
+        if (a === null) {
+          const x = canvas.width / 2 + b * scale;
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
         } else {
-          a = null;
-          b = point1.x;
+          ctx.moveTo(canvas.width / 2 + startX * scale, canvas.height / 2 - (a * startX + b) * scale);
+          ctx.lineTo(canvas.width / 2 + endX * scale, canvas.height / 2 - (a * endX + b) * scale);
         }
-
-        lineDrawn = true;
-        return true;
+        ctx.stroke();
       }
 
-      function drawLineFromPoints() {
-        if (selectedPoints.length !== 2) {
-          alert("Dê dois cliques em dois pontos para selecioná-los antes de traçar a reta.");
-          return;
+      function drawTangentTriangle() {
+        if (!lineDrawn || selectedPoints.length !== 2 || a === null) return;
+
+        const p1 = selectedPoints[0];
+        const p2 = selectedPoints[1];
+        const deltaX = p2.x - p1.x;
+        const deltaY = p2.y - p1.y;
+        if (Math.abs(deltaX) < 0.000001 || Math.abs(deltaY) < 0.000001) return;
+
+        const baseEnd = { x: p2.x, y: p1.y };
+        const s1 = graphToCanvas(p1);
+        const s2 = graphToCanvas(p2);
+        const sBase = graphToCanvas(baseEnd);
+
+        ctx.save();
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = "#d05a87";
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        ctx.moveTo(s1.x, s1.y);
+        ctx.lineTo(sBase.x, sBase.y);
+        ctx.lineTo(s2.x, s2.y);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(220, 90, 135, 0.12)";
+        ctx.beginPath();
+        ctx.moveTo(s1.x, s1.y);
+        ctx.lineTo(sBase.x, sBase.y);
+        ctx.lineTo(s2.x, s2.y);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#b03a68";
+        ctx.font = "12px Arial";
+        ctx.fillText("Δx", (s1.x + sBase.x) / 2 - 8, sBase.y + 16);
+        ctx.fillText("Δy", sBase.x + 6, (sBase.y + s2.y) / 2);
+
+        drawAngleArc(s1, p1, p2);
+        ctx.restore();
+      }
+
+      function drawAngleArc(originScreen, p1, p2) {
+        const angle = Math.atan2(-(p2.y - p1.y), p2.x - p1.x);
+        const radius = 28;
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        if (p2.x >= p1.x) {
+          ctx.arc(originScreen.x, originScreen.y, radius, 0, angle, angle < 0);
+        } else {
+          ctx.arc(originScreen.x, originScreen.y, radius, Math.PI, angle, angle > Math.PI);
         }
-        calculateLineFromSelectedPoints();
-        refreshAll();
-        saveState();
+        ctx.stroke();
+        ctx.fillStyle = "#333";
+        ctx.font = "13px Arial";
+        ctx.fillText("α", originScreen.x + 32, originScreen.y - 10);
       }
 
-      function formatNumber(value) {
-        if (!Number.isFinite(value)) return "--";
-        return value.toFixed(2);
-      }
-
-      function formatEquation(aValue, bValue) {
-        const aText = aValue.toFixed(2);
-        if (bValue < 0) return `y = ${aText}x - ${Math.abs(bValue).toFixed(2)}`;
-        if (bValue > 0) return `y = ${aText}x + ${bValue.toFixed(2)}`;
+      function formatEquation(a, b) {
+        const aText = a.toFixed(2);
+        if (b < 0) return `y = ${aText}x - ${Math.abs(b).toFixed(2)}`;
+        if (b > 0) return `y = ${aText}x + ${b.toFixed(2)}`;
         return `y = ${aText}x`;
       }
 
@@ -514,65 +751,11 @@
 
         if (a === null) {
           expression.textContent = `x = ${b.toFixed(2)}`;
-          additionalInfo.textContent = "A reta vertical não representa uma função porque, para um valor de x específico, existem diversos valores de y.";
+          additionalInfo.textContent = "A reta vertical não representa uma função.";
         } else {
           expression.textContent = formatEquation(a, b);
           additionalInfo.textContent = "";
         }
-      }
-
-      function updateTangentInfo() {
-        const tangentInfo = document.getElementById("tangentInfo");
-
-        if (!lineDrawn || selectedPoints.length !== 2) {
-          tangentInfo.innerHTML = "Selecione dois pontos e trace a reta.";
-          return;
-        }
-
-        const p1 = selectedPoints[0];
-        const p2 = selectedPoints[1];
-        const deltaX = p2.x - p1.x;
-        const deltaY = p2.y - p1.y;
-
-        if (Math.abs(deltaX) < 0.000001) {
-          tangentInfo.innerHTML = `
-            <div>A reta é vertical.</div>
-            <div>Δx = 0, portanto tg(α) não está definida.</div>
-          `;
-          return;
-        }
-
-        const tangent = deltaY / deltaX;
-        tangentInfo.innerHTML = `
-          <div>Δy = y₂ - y₁ = ${formatNumber(deltaY)}</div>
-          <div>Δx = x₂ - x₁ = ${formatNumber(deltaX)}</div>
-          <div class="tangent-line">tg(α) = Δy / Δx = ${formatNumber(deltaY)} / ${formatNumber(deltaX)} = ${formatNumber(tangent)}</div>
-          <div>Coeficiente angular: a = ${formatNumber(tangent)}</div>
-        `;
-      }
-
-      function syncControls() {
-        document.getElementById("zoomSelect").value = String(zoomLevel);
-        document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
-
-        const aRange = document.getElementById("aRange");
-        const bRange = document.getElementById("bRange");
-        const aValue = document.getElementById("aValue");
-        const bValue = document.getElementById("bValue");
-
-        if (a !== null) {
-          const limitedA = Math.max(-5, Math.min(5, a));
-          aRange.value = limitedA;
-          aValue.textContent = a.toFixed(2);
-          bRange.value = Math.max(-5, Math.min(5, b));
-          bValue.textContent = b.toFixed(2);
-        } else {
-          aValue.textContent = "--";
-          bValue.textContent = b.toFixed(2);
-        }
-
-        aRange.disabled = !lineDrawn || a === null;
-        bRange.disabled = !lineDrawn || a === null;
       }
 
       function updateTable() {
@@ -597,19 +780,11 @@
         table.querySelectorAll("tr").forEach((row, index) => {
           const point = points[index];
           const errorMargin = 0.001;
-          const offLine = a === null
+          const isOffLine = a === null
             ? Math.abs(point.x - b) > errorMargin
             : Math.abs(point.y - (a * point.x + b)) > errorMargin;
-          row.classList.toggle("highlight", offLine);
+          row.classList.toggle("highlight", isOffLine);
         });
-      }
-
-      function refreshAll() {
-        syncControls();
-        updateExpression();
-        updateTangentInfo();
-        drawGraph();
-        updateTable();
       }
 
       function addPoint() {
@@ -625,7 +800,7 @@
       }
 
       function clearPoints() {
-        const confirmar = confirm("Tem certeza que deseja apagar todos os pontos e dados salvos?");
+        const confirmar = confirm("Tem certeza que deseja apagar os pontos e os dados salvos?");
         if (!confirmar) return;
 
         points = [];
@@ -645,34 +820,39 @@
       });
 
       document.getElementById("aRange").addEventListener("input", function () {
-        if (a === null) return;
         a = parseFloat(this.value);
-        selectedPoints.forEach((point) => {
-          point.y = a * point.x + b;
-        });
+        lineDrawn = true;
+        updateSelectedPointsBasedOnLine();
         refreshAll();
         saveState();
       });
 
       document.getElementById("bRange").addEventListener("input", function () {
-        if (a === null) return;
         b = parseFloat(this.value);
-        selectedPoints.forEach((point) => {
-          point.y = a * point.x + b;
-        });
+        lineDrawn = true;
+        updateSelectedPointsBasedOnLine();
         refreshAll();
         saveState();
       });
 
       document.getElementById("createPointBtn").addEventListener("click", function () {
-        canvas.addEventListener("click", createPointOnClick, { once: true });
+        creatingPoint = !creatingPoint;
+        this.textContent = creatingPoint ? "Clique no gráfico" : "Criar ponto no gráfico";
       });
 
-      function createPointOnClick(event) {
-        const coordinate = getMouseGraphCoordinates(event);
-        points.push({ x: coordinate.x, y: coordinate.y });
-        refreshAll();
-        saveState();
+      function updateSelectedPointsBasedOnLine() {
+        if (selectedPoints.length !== 2 || a === null) return;
+        selectedPoints.forEach((point) => {
+          point.y = a * point.x + b;
+        });
+      }
+
+      function refreshAll() {
+        syncControls();
+        updateExpression();
+        updateTable();
+        updateTangentInfo();
+        drawGraph();
       }
 
       loadState();
