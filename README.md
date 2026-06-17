@@ -29,3 +29,9 @@ Aplicativo educacional em HTML, CSS e JavaScript puro para estudo de plano carte
 ## Versão
 
 V1
+
+
+## V1
+- Logo Atelier Function atualizada.
+- Versão exibida na tela.
+- Exportação do gráfico e das informações em PDF por impressão/salvamento do navegador.
