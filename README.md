@@ -2,15 +2,12 @@
 
 Projeto pronto para GitHub Pages.
 
-Ajustes incluídos:
-- Layout usando toda a tela do usuário em desktop.
-- Gráfico maior e responsivo.
-- Cabeçalho com a logo correta do Atelier Function visível na tela.
-- Logo do Atelier Function também no PDF.
-- Remoção de qualquer referência visual à versão na tela do usuário e no PDF.
-- PDF em formato paisagem, com gráfico, análise matemática e tabela de pontos.
-- Coordenadas dos pontos no gráfico com identificação P1, P2, P3...
-- Reposicionamento automático das etiquetas para reduzir sobreposição.
-- Tabela lateral com Ponto, x e y.
-- Destaque visual do ponto selecionado.
-- Textos “domínio/imagem dos pontos” ajustados para “intervalo dos valores cadastrados”.
+Ajustes da V19:
+- Layout reconstruído com referência direta no mockup conceitual aprovado.
+- Cabeçalho profissional com logo Atelier Function, título central e ações rápidas.
+- Gráfico como elemento principal da tela.
+- Painel lateral reorganizado em cartões de análise.
+- Tipografia mais limpa e moderna na interface e no canvas.
+- Rótulos dos pontos redesenhados com melhor legibilidade.
+- Correção do posicionamento do ângulo α para evitar corte nas bordas.
+- Mantidas as funções existentes: criar/mover/apagar pontos, traçar reta, exportar PDF, exportar/importar projeto e limpar dados.
