@@ -198,7 +198,7 @@
           <button onclick="drawLineFromPoints()">
             Traçar Reta pelos Pontos
           </button>
-          <button onclick="clearPoints()">Apagar Pontos</button>
+          <button onclick="clearPoints()">Apagar Dados</button>
         </div>
       </div>
 
@@ -222,6 +222,72 @@
       let a = 1,
         b = 0;
       let movingPoint = null; // Variável para o ponto em movimento
+      const STORAGE_KEY = "planoCartesianoEstadoV1";
+
+      function getSelectedPointIndexes() {
+        return selectedPoints
+          .map((selectedPoint) => points.indexOf(selectedPoint))
+          .filter((index) => index >= 0);
+      }
+
+      function saveState() {
+        const state = {
+          zoomLevel,
+          points,
+          selectedPointIndexes: getSelectedPointIndexes(),
+          lineDrawn,
+          a,
+          b,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function loadState() {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (!savedState) return;
+
+        try {
+          const state = JSON.parse(savedState);
+          zoomLevel = Number(state.zoomLevel) || 1;
+          points = Array.isArray(state.points) ? state.points : [];
+          lineDrawn = Boolean(state.lineDrawn);
+          a = state.a === null ? null : Number(state.a ?? 1);
+          b = Number(state.b ?? 0);
+
+          const indexes = Array.isArray(state.selectedPointIndexes)
+            ? state.selectedPointIndexes
+            : [];
+          selectedPoints = indexes
+            .map((index) => points[index])
+            .filter(Boolean);
+        } catch (error) {
+          console.warn("Não foi possível carregar os dados salvos.", error);
+        }
+      }
+
+      function syncInterfaceFromState() {
+        document.getElementById("zoomSelect").value = String(zoomLevel);
+        document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
+
+        const aRange = document.getElementById("aRange");
+        const bRange = document.getElementById("bRange");
+        aRange.disabled = !lineDrawn;
+        bRange.disabled = !lineDrawn;
+
+        if (a !== null) {
+          aRange.value = Math.max(-5, Math.min(5, a));
+          document.getElementById("aValue").textContent = a.toFixed(2);
+        } else {
+          document.getElementById("aValue").textContent = "vertical";
+        }
+
+        bRange.value = Math.max(-5, Math.min(5, b));
+        document.getElementById("bValue").textContent = b.toFixed(2);
+        updateExpression();
+        updateTable();
+        drawGraph();
+        highlightOffLinePoints();
+      }
 
       const canvas = document.getElementById("graphCanvas");
       const ctx = canvas.getContext("2d");
@@ -277,6 +343,7 @@
 
           drawGraph();
           updateTable();
+          saveState();
         }
       }
 
@@ -308,6 +375,7 @@
           }
 
           drawGraph();
+          saveState();
         }
       }
 
@@ -398,6 +466,7 @@
         drawGraph();
         highlightOffLinePoints();
         enableSliders(); // Habilita os sliders apenas após a reta ser desenhada
+        saveState();
       }
 
       function drawGraph() {
@@ -508,10 +577,14 @@
           points.push({ x, y });
           updateTable();
           drawGraph();
+          saveState();
         }
       }
 
       function clearPoints() {
+        const confirmar = confirm("Tem certeza que deseja apagar todos os pontos e a reta? Esta ação remove os dados salvos.");
+        if (!confirmar) return;
+
         points = [];
         selectedPoints = [];
         lineDrawn = false;
@@ -520,6 +593,7 @@
         updateTable();
         drawGraph();
         document.getElementById("additionalInfo").textContent = ""; // Limpa a mensagem
+        localStorage.removeItem(STORAGE_KEY);
       }
 
       document
@@ -528,6 +602,7 @@
           zoomLevel = parseFloat(this.value);
           document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
           drawGraph();
+          saveState();
         });
 
       document.getElementById("aRange").addEventListener("input", function () {
@@ -537,6 +612,7 @@
         drawGraph();
         highlightOffLinePoints();
         updateSelectedPointsBasedOnLine();
+        saveState();
       });
 
       document.getElementById("bRange").addEventListener("input", function () {
@@ -554,6 +630,7 @@
 
         highlightOffLinePoints();
         updateSelectedPointsBasedOnLine();
+        saveState();
       });
 
       document
@@ -573,6 +650,7 @@
         points.push({ x, y });
         drawGraph();
         updateTable();
+        saveState();
         canvas.removeEventListener("click", createPointOnClick);
       }
 
@@ -588,7 +666,8 @@
         updateTable();
       }
 
-      drawGraph();
+      loadState();
+      syncInterfaceFromState();
     </script>
   </body>
 </html>
