@@ -5,51 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plano Cartesiano Interativo</title>
     <style>
+      * { box-sizing: border-box; }
+
       body {
         font-family: Arial, sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        min-height: 100vh;
         margin: 0;
+        background: #eeeeee;
       }
 
       .container {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
+        gap: 12px;
         background-color: #f5f5f5;
         padding: 15px;
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        width: 90vw;
-        max-width: 1000px;
-        height: 90vh;
-        position: relative; /* Para permitir posicionamento da imagem */
+        width: 95vw;
+        max-width: 1050px;
+        min-height: 90vh;
+        position: relative;
+      }
+
+      .left-area {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
       }
 
       .graph-container {
         position: relative;
-        width: 40vw;
-        height: 50vw;
-        max-width: 500px;
-        max-height: 500px;
+        width: 500px;
+        height: 500px;
+        max-width: 60vw;
+        max-height: 60vw;
         background-color: #ffffff;
         border: 2px solid #000;
-        margin-right: 10px;
+      }
+
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
       }
 
       .controls {
         display: flex;
         flex-direction: column;
-        margin-left: 10px;
-        width: 35vw;
-        max-width: 350px;
+        width: 360px;
+        max-width: 38vw;
       }
 
       .expression {
-        font-size: 1.1em;
-        margin-bottom: 10px;
+        font-size: 1.25em;
+        margin-bottom: 8px;
         font-weight: bold;
         text-align: center;
       }
@@ -61,110 +78,152 @@
         margin-top: 5px;
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 5px;
-        font-size: 0.85em;
+      .tangent-box {
+        background: #ffffff;
+        border: 1px solid #cccccc;
+        border-radius: 8px;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 0.92em;
+        line-height: 1.45;
       }
 
-      th,
-      td {
-        border: 1px solid #000;
-        padding: 4px;
+      .tangent-box h3 {
+        margin: 0 0 6px 0;
+        font-size: 1em;
         text-align: center;
       }
 
-      canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
+      .tangent-line {
+        font-weight: bold;
+        text-align: center;
+        margin-top: 4px;
       }
 
       .slider-container {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+
+      .slider-container label { min-width: 105px; }
+      .slider-container span { min-width: 44px; text-align: right; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+        font-size: 0.85em;
+        background: white;
+      }
+
+      th, td {
+        border: 1px solid #000;
+        padding: 4px;
+        text-align: center;
       }
 
       .point-input {
         margin-top: 10px;
         display: flex;
         justify-content: space-between;
+        gap: 5px;
       }
 
       .point-input input {
-        width: 50px;
-        margin-right: 5px;
+        width: 70px;
       }
 
       .buttons {
         display: flex;
         justify-content: space-between;
+        gap: 5px;
         margin-top: 10px;
+        flex-wrap: wrap;
       }
 
-      .sliders,
-      .table {
-        margin-top: 10px;
+      button {
+        cursor: pointer;
+        padding: 6px 8px;
       }
 
-      .highlight {
-        background-color: lightgray;
-      }
+      .highlight { background-color: lightgray; }
 
-      .selected {
-        stroke: black; /* Contorno preto para o ponto selecionado */
-        stroke-width: 2;
-      }
-
-      /* Estilo para a imagem no canto inferior direito */
       .image-container {
         position: absolute;
-        bottom: 0;
-        right: 0;
+        bottom: 35px;
+        right: 10px;
         margin: 10px;
       }
 
       .image-container img {
-        width: 250px; /* Define a largura da imagem */
+        width: 220px;
+        max-width: 25vw;
+      }
+
+      .version-tag {
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        background: #222222;
+        color: #ffffff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-family: Arial, sans-serif;
+        z-index: 9999;
+        opacity: 0.9;
+      }
+
+      @media (max-width: 850px) {
+        body { align-items: flex-start; }
+        .container {
+          flex-direction: column;
+          min-height: auto;
+        }
+        .graph-container {
+          width: 90vw;
+          height: 90vw;
+          max-width: 500px;
+          max-height: 500px;
+        }
+        .controls {
+          width: 100%;
+          max-width: none;
+        }
+        .image-container { display: none; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <button id="createPointBtn">Criar Ponto</button>
-      <div class="graph-container">
-        <canvas id="graphCanvas" width="500" height="500"></canvas>
+      <div class="left-area">
+        <button id="createPointBtn">Criar Ponto</button>
+        <div class="graph-container">
+          <canvas id="graphCanvas" width="500" height="500"></canvas>
+        </div>
       </div>
+
       <div class="controls">
         <div class="expression" id="expression">y = ax + b</div>
         <div class="additional-info" id="additionalInfo"></div>
+
+        <div class="tangent-box" id="tangentBox">
+          <h3>Tangente da reta</h3>
+          <div id="tangentInfo">Selecione dois pontos e trace a reta.</div>
+        </div>
+
         <div id="sliders" class="sliders">
           <div class="slider-container">
             <label for="aRange">Coeficiente a:</label>
-            <input
-              type="range"
-              id="aRange"
-              min="-5"
-              max="5"
-              step="0.1"
-              value="1"
-              disabled
-            />
+            <input type="range" id="aRange" min="-5" max="5" step="0.1" value="1" disabled />
             <span id="aValue">1</span>
           </div>
           <div class="slider-container">
             <label for="bRange">Coeficiente b:</label>
-            <input
-              type="range"
-              id="bRange"
-              min="-5"
-              max="5"
-              step="0.1"
-              value="0"
-              disabled
-            />
+            <input type="range" id="bRange" min="-5" max="5" step="0.1" value="0" disabled />
             <span id="bValue">0</span>
           </div>
           <div class="slider-container">
@@ -173,210 +232,149 @@
               <option value="0.25">0,25x</option>
               <option value="0.5">0,5x</option>
               <option value="1" selected>1x</option>
+              <option value="2">2x</option>
             </select>
             <span id="zoomValue">1x</span>
           </div>
         </div>
+
         <div class="table">
           <h3 style="text-align: center">Tabela de Valores</h3>
           <table>
             <thead>
-              <tr>
-                <th>x</th>
-                <th>y</th>
-              </tr>
+              <tr><th>x</th><th>y</th></tr>
             </thead>
             <tbody id="valueTable"></tbody>
           </table>
         </div>
+
         <div class="point-input">
-          <input type="number" id="xPoint" placeholder="x" />
-          <input type="number" id="yPoint" placeholder="y" />
+          <input type="number" id="xPoint" placeholder="x" step="0.1" />
+          <input type="number" id="yPoint" placeholder="y" step="0.1" />
           <button onclick="addPoint()">Adicionar Ponto</button>
         </div>
+
         <div class="buttons">
-          <button onclick="drawLineFromPoints()">
-            Traçar Reta pelos Pontos
-          </button>
+          <button onclick="drawLineFromPoints()">Traçar Reta pelos Pontos</button>
           <button onclick="clearPoints()">Apagar Dados</button>
         </div>
       </div>
 
-      <!-- Container da imagem no canto inferior direito -->
       <div class="image-container">
         <a href="https://ibb.co/WWTt7CV">
-          <img
-            src="https://i.ibb.co/bgfJYtb/Apresenta-o-de-Slides-Corporativo-Preto-e-Amarelo.png"
-            alt="Apresentação Corporativa"
-            border="0"
-          />
+          <img src="https://i.ibb.co/bgfJYtb/Apresenta-o-de-Slides-Corporativo-Preto-e-Amarelo.png" alt="Apresentação Corporativa" border="0" />
         </a>
       </div>
     </div>
 
+    <div class="version-tag" id="versionTag">Plano Cartesiano Interativo • V1</div>
+
     <script>
+      const APP_VERSION = "V1";
+      const STORAGE_KEY = "planoCartesianoInterativoV1";
+
       let zoomLevel = 1;
       let points = [];
       let selectedPoints = [];
       let lineDrawn = false;
-      let a = 1,
-        b = 0;
-      let movingPoint = null; // Variável para o ponto em movimento
-      const STORAGE_KEY = "planoCartesianoEstadoV1";
+      let a = 1;
+      let b = 0;
+      let movingPoint = null;
 
-      function getSelectedPointIndexes() {
-        return selectedPoints
-          .map((selectedPoint) => points.indexOf(selectedPoint))
-          .filter((index) => index >= 0);
-      }
+      const canvas = document.getElementById("graphCanvas");
+      const ctx = canvas.getContext("2d");
+
+      document.getElementById("versionTag").textContent = `Plano Cartesiano Interativo • ${APP_VERSION}`;
+
+      canvas.addEventListener("mousedown", handleMouseDown);
+      canvas.addEventListener("mouseup", handleMouseUp);
+      canvas.addEventListener("mousemove", handleMouseMove);
+      canvas.addEventListener("mouseleave", handleMouseUp);
+      canvas.addEventListener("dblclick", handleDoubleClick);
 
       function saveState() {
-        const state = {
-          zoomLevel,
-          points,
-          selectedPointIndexes: getSelectedPointIndexes(),
-          lineDrawn,
-          a,
-          b,
-        };
+        const selectedPointIndexes = selectedPoints.map((point) => points.indexOf(point));
+        const state = { zoomLevel, points, selectedPointIndexes, lineDrawn, a, b };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
       function loadState() {
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (!savedState) return;
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
 
         try {
-          const state = JSON.parse(savedState);
-          zoomLevel = Number(state.zoomLevel) || 1;
+          const state = JSON.parse(saved);
+          zoomLevel = state.zoomLevel ?? 1;
           points = Array.isArray(state.points) ? state.points : [];
           lineDrawn = Boolean(state.lineDrawn);
-          a = state.a === null ? null : Number(state.a ?? 1);
-          b = Number(state.b ?? 0);
-
-          const indexes = Array.isArray(state.selectedPointIndexes)
-            ? state.selectedPointIndexes
+          a = state.a ?? 1;
+          b = state.b ?? 0;
+          selectedPoints = Array.isArray(state.selectedPointIndexes)
+            ? state.selectedPointIndexes.map((index) => points[index]).filter(Boolean)
             : [];
-          selectedPoints = indexes
-            .map((index) => points[index])
-            .filter(Boolean);
         } catch (error) {
           console.warn("Não foi possível carregar os dados salvos.", error);
         }
       }
 
-      function syncInterfaceFromState() {
-        document.getElementById("zoomSelect").value = String(zoomLevel);
-        document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
-
-        const aRange = document.getElementById("aRange");
-        const bRange = document.getElementById("bRange");
-        aRange.disabled = !lineDrawn;
-        bRange.disabled = !lineDrawn;
-
-        if (a !== null) {
-          aRange.value = Math.max(-5, Math.min(5, a));
-          document.getElementById("aValue").textContent = a.toFixed(2);
-        } else {
-          document.getElementById("aValue").textContent = "vertical";
-        }
-
-        bRange.value = Math.max(-5, Math.min(5, b));
-        document.getElementById("bValue").textContent = b.toFixed(2);
-        updateExpression();
-        updateTable();
-        drawGraph();
-        highlightOffLinePoints();
-      }
-
-      const canvas = document.getElementById("graphCanvas");
-      const ctx = canvas.getContext("2d");
-
-      canvas.addEventListener("mousedown", (e) => handleMouseDown(e));
-      canvas.addEventListener("mouseup", (e) => handleMouseUp(e));
-      canvas.addEventListener("mousemove", (e) => handleMouseMove(e));
-      canvas.addEventListener("dblclick", (e) => handleDoubleClick(e)); // Adiciona o evento de duplo clique
-
-      function handleMouseDown(e) {
-        const { offsetX, offsetY } = e;
+      function getMouseGraphCoordinates(event) {
+        const rect = canvas.getBoundingClientRect();
+        const offsetX = ((event.clientX - rect.left) / rect.width) * canvas.width;
+        const offsetY = ((event.clientY - rect.top) / rect.height) * canvas.height;
         const scale = 50 * zoomLevel;
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const clickedX = (offsetX - centerX) / scale;
-        const clickedY = (centerY - offsetY) / scale;
+        return {
+          x: (offsetX - centerX) / scale,
+          y: (centerY - offsetY) / scale,
+        };
+      }
 
-        let clickedPoint = null;
-        points.forEach((point) => {
-          const dist = Math.sqrt(
-            (point.x - clickedX) ** 2 + (point.y - clickedY) ** 2
-          );
-          if (dist < 0.2) {
-            clickedPoint = point;
-          }
+      function findClickedPoint(x, y) {
+        return points.find((point) => {
+          const dist = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+          return dist < 0.2;
         });
+      }
 
-        if (clickedPoint) {
-          movingPoint = clickedPoint; // Armazena o ponto que será movido
-        }
+      function handleMouseDown(event) {
+        const clicked = getMouseGraphCoordinates(event);
+        const clickedPoint = findClickedPoint(clicked.x, clicked.y);
+        if (clickedPoint) movingPoint = clickedPoint;
       }
 
       function handleMouseUp() {
-        movingPoint = null; // Reseta o ponto em movimento
+        movingPoint = null;
       }
 
-      function handleMouseMove(e) {
-        if (movingPoint) {
-          const { offsetX, offsetY } = e;
-          const scale = 50 * zoomLevel;
-          const centerX = canvas.width / 2;
-          const centerY = canvas.height / 2;
-          const newX = (offsetX - centerX) / scale;
-          const newY = (centerY - offsetY) / scale;
+      function handleMouseMove(event) {
+        if (!movingPoint) return;
 
-          movingPoint.x = newX; // Atualiza a posição do ponto
-          movingPoint.y = newY; // Atualiza a posição do ponto
+        const newPosition = getMouseGraphCoordinates(event);
+        movingPoint.x = newPosition.x;
+        movingPoint.y = newPosition.y;
 
-          // Se o ponto movido for parte da linha, recalcula a reta
-          if (selectedPoints.includes(movingPoint)) {
-            drawLineFromPoints();
-          }
-
-          drawGraph();
-          updateTable();
-          saveState();
+        if (selectedPoints.includes(movingPoint)) {
+          calculateLineFromSelectedPoints();
         }
+
+        refreshAll();
+        saveState();
       }
 
-      function handleDoubleClick(e) {
-        const { offsetX, offsetY } = e;
-        const scale = 50 * zoomLevel;
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const clickedX = (offsetX - centerX) / scale;
-        const clickedY = (centerY - offsetY) / scale;
+      function handleDoubleClick(event) {
+        const clicked = getMouseGraphCoordinates(event);
+        const clickedPoint = findClickedPoint(clicked.x, clicked.y);
+        if (!clickedPoint) return;
 
-        let clickedPoint = null;
-        points.forEach((point) => {
-          const dist = Math.sqrt(
-            (point.x - clickedX) ** 2 + (point.y - clickedY) ** 2
-          );
-          if (dist < 0.2) {
-            clickedPoint = point;
-          }
-        });
-
-        if (clickedPoint) {
-          if (selectedPoints.includes(clickedPoint)) {
-            selectedPoints = selectedPoints.filter((p) => p !== clickedPoint);
-          } else {
-            if (selectedPoints.length < 2) {
-              selectedPoints.push(clickedPoint);
-            }
-          }
-
-          drawGraph();
-          saveState();
+        if (selectedPoints.includes(clickedPoint)) {
+          selectedPoints = selectedPoints.filter((point) => point !== clickedPoint);
+        } else if (selectedPoints.length < 2) {
+          selectedPoints.push(clickedPoint);
         }
+
+        refreshAll();
+        saveState();
       }
 
       function drawGrid(scale) {
@@ -400,6 +398,7 @@
         }
 
         ctx.strokeStyle = "black";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(centerX, 0);
         ctx.lineTo(centerX, canvas.height);
@@ -416,9 +415,7 @@
 
         for (let y = -centerY; y <= centerY; y += scale) {
           const value = -(y / scale).toFixed(0);
-          if (value !== "0") {
-            ctx.fillText(value, centerX + 5, centerY + y + 5);
-          }
+          if (value !== "0") ctx.fillText(value, centerX + 5, centerY + y + 5);
         }
       }
 
@@ -428,45 +425,34 @@
 
         points.forEach((point) => {
           ctx.beginPath();
-          ctx.arc(
-            centerX + point.x * scale,
-            centerY - point.y * scale,
-            5,
-            0,
-            Math.PI * 2
-          );
-          ctx.fillStyle = selectedPoints.includes(point) ? "orange" : "blue"; // Cor do ponto selecionado
+          ctx.arc(centerX + point.x * scale, centerY - point.y * scale, 5, 0, Math.PI * 2);
+          ctx.fillStyle = selectedPoints.includes(point) ? "orange" : "blue";
           ctx.fill();
 
           if (selectedPoints.includes(point)) {
-            ctx.strokeStyle = "black"; // Contorno preto para o ponto selecionado
+            ctx.strokeStyle = "black";
             ctx.lineWidth = 2;
             ctx.stroke();
           }
         });
       }
 
-      function drawLineFromPoints() {
-        if (selectedPoints.length !== 2) return;
-        const point1 = selectedPoints[0];
-        const point2 = selectedPoints[1];
+      function drawLine(scale) {
+        if (!lineDrawn) return;
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
 
-        if (point1.x !== point2.x) {
-          // Reta não vertical
-          a = (point2.y - point1.y) / (point2.x - point1.x);
-          b = point1.y - a * point1.x;
+        if (a === null) {
+          ctx.moveTo(canvas.width / 2 + b * scale, 0);
+          ctx.lineTo(canvas.width / 2 + b * scale, canvas.height);
         } else {
-          // Reta vertical
-          a = null;
-          b = point1.x;
+          const startX = -canvas.width / 2 / scale;
+          const endX = canvas.width / 2 / scale;
+          ctx.moveTo(canvas.width / 2 + startX * scale, canvas.height / 2 - (a * startX + b) * scale);
+          ctx.lineTo(canvas.width / 2 + endX * scale, canvas.height / 2 - (a * endX + b) * scale);
         }
-
-        lineDrawn = true;
-        updateExpression();
-        drawGraph();
-        highlightOffLinePoints();
-        enableSliders(); // Habilita os sliders apenas após a reta ser desenhada
-        saveState();
+        ctx.stroke();
       }
 
       function drawGraph() {
@@ -477,42 +463,42 @@
         drawPoints(scale);
       }
 
-      function drawLine(scale) {
-        if (!lineDrawn) return;
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        const startX = -canvas.width / 2 / scale;
-        const endX = canvas.width / 2 / scale;
+      function calculateLineFromSelectedPoints() {
+        if (selectedPoints.length !== 2) return false;
+        const point1 = selectedPoints[0];
+        const point2 = selectedPoints[1];
 
-        if (a === null) {
-          // Reta vertical
-          ctx.moveTo(canvas.width / 2 + b * scale, 0);
-          ctx.lineTo(canvas.width / 2 + b * scale, canvas.height);
+        if (Math.abs(point1.x - point2.x) > 0.000001) {
+          a = (point2.y - point1.y) / (point2.x - point1.x);
+          b = point1.y - a * point1.x;
         } else {
-          ctx.moveTo(
-            canvas.width / 2 + startX * scale,
-            canvas.height / 2 - (a * startX + b) * scale
-          );
-          ctx.lineTo(
-            canvas.width / 2 + endX * scale,
-            canvas.height / 2 - (a * endX + b) * scale
-          );
+          a = null;
+          b = point1.x;
         }
-        ctx.stroke();
+
+        lineDrawn = true;
+        return true;
       }
 
-      function formatEquation(a, b) {
-        const aText = a.toFixed(2);
-
-        if (b < 0) {
-          return `y = ${aText}x - ${Math.abs(b).toFixed(2)}`;
+      function drawLineFromPoints() {
+        if (selectedPoints.length !== 2) {
+          alert("Dê dois cliques em dois pontos para selecioná-los antes de traçar a reta.");
+          return;
         }
+        calculateLineFromSelectedPoints();
+        refreshAll();
+        saveState();
+      }
 
-        if (b > 0) {
-          return `y = ${aText}x + ${b.toFixed(2)}`;
-        }
+      function formatNumber(value) {
+        if (!Number.isFinite(value)) return "--";
+        return value.toFixed(2);
+      }
 
+      function formatEquation(aValue, bValue) {
+        const aText = aValue.toFixed(2);
+        if (bValue < 0) return `y = ${aText}x - ${Math.abs(bValue).toFixed(2)}`;
+        if (bValue > 0) return `y = ${aText}x + ${bValue.toFixed(2)}`;
         return `y = ${aText}x`;
       }
 
@@ -520,20 +506,73 @@
         const additionalInfo = document.getElementById("additionalInfo");
         const expression = document.getElementById("expression");
 
+        if (!lineDrawn) {
+          expression.textContent = "y = ax + b";
+          additionalInfo.textContent = "";
+          return;
+        }
+
         if (a === null) {
-          // Reta vertical
           expression.textContent = `x = ${b.toFixed(2)}`;
-          additionalInfo.textContent =
-            "A reta vertical não representa uma função porque, para um valor de x específico, existem diversos valores de y.";
+          additionalInfo.textContent = "A reta vertical não representa uma função porque, para um valor de x específico, existem diversos valores de y.";
         } else {
           expression.textContent = formatEquation(a, b);
-          additionalInfo.textContent = ""; // Limpa a mensagem
+          additionalInfo.textContent = "";
         }
       }
 
-      function enableSliders() {
-        document.getElementById("aRange").disabled = false;
-        document.getElementById("bRange").disabled = false;
+      function updateTangentInfo() {
+        const tangentInfo = document.getElementById("tangentInfo");
+
+        if (!lineDrawn || selectedPoints.length !== 2) {
+          tangentInfo.innerHTML = "Selecione dois pontos e trace a reta.";
+          return;
+        }
+
+        const p1 = selectedPoints[0];
+        const p2 = selectedPoints[1];
+        const deltaX = p2.x - p1.x;
+        const deltaY = p2.y - p1.y;
+
+        if (Math.abs(deltaX) < 0.000001) {
+          tangentInfo.innerHTML = `
+            <div>A reta é vertical.</div>
+            <div>Δx = 0, portanto tg(α) não está definida.</div>
+          `;
+          return;
+        }
+
+        const tangent = deltaY / deltaX;
+        tangentInfo.innerHTML = `
+          <div>Δy = y₂ - y₁ = ${formatNumber(deltaY)}</div>
+          <div>Δx = x₂ - x₁ = ${formatNumber(deltaX)}</div>
+          <div class="tangent-line">tg(α) = Δy / Δx = ${formatNumber(deltaY)} / ${formatNumber(deltaX)} = ${formatNumber(tangent)}</div>
+          <div>Coeficiente angular: a = ${formatNumber(tangent)}</div>
+        `;
+      }
+
+      function syncControls() {
+        document.getElementById("zoomSelect").value = String(zoomLevel);
+        document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
+
+        const aRange = document.getElementById("aRange");
+        const bRange = document.getElementById("bRange");
+        const aValue = document.getElementById("aValue");
+        const bValue = document.getElementById("bValue");
+
+        if (a !== null) {
+          const limitedA = Math.max(-5, Math.min(5, a));
+          aRange.value = limitedA;
+          aValue.textContent = a.toFixed(2);
+          bRange.value = Math.max(-5, Math.min(5, b));
+          bValue.textContent = b.toFixed(2);
+        } else {
+          aValue.textContent = "--";
+          bValue.textContent = b.toFixed(2);
+        }
+
+        aRange.disabled = !lineDrawn || a === null;
+        bRange.disabled = !lineDrawn || a === null;
       }
 
       function updateTable() {
@@ -549,25 +588,28 @@
           row.appendChild(yCell);
           tableBody.appendChild(row);
         });
+        highlightOffLinePoints();
       }
 
       function highlightOffLinePoints() {
         if (!lineDrawn) return;
-
         const table = document.getElementById("valueTable");
         table.querySelectorAll("tr").forEach((row, index) => {
           const point = points[index];
-          const yOnLine = a !== null ? a * point.x + b : null;
           const errorMargin = 0.001;
-          if (
-            yOnLine === null ||
-            (Math.abs(point.y - yOnLine) > errorMargin && a !== null)
-          ) {
-            row.classList.add("highlight");
-          } else {
-            row.classList.remove("highlight");
-          }
+          const offLine = a === null
+            ? Math.abs(point.x - b) > errorMargin
+            : Math.abs(point.y - (a * point.x + b)) > errorMargin;
+          row.classList.toggle("highlight", offLine);
         });
+      }
+
+      function refreshAll() {
+        syncControls();
+        updateExpression();
+        updateTangentInfo();
+        drawGraph();
+        updateTable();
       }
 
       function addPoint() {
@@ -575,99 +617,66 @@
         const y = parseFloat(document.getElementById("yPoint").value);
         if (!isNaN(x) && !isNaN(y)) {
           points.push({ x, y });
-          updateTable();
-          drawGraph();
+          document.getElementById("xPoint").value = "";
+          document.getElementById("yPoint").value = "";
+          refreshAll();
           saveState();
         }
       }
 
       function clearPoints() {
-        const confirmar = confirm("Tem certeza que deseja apagar todos os pontos e a reta? Esta ação remove os dados salvos.");
+        const confirmar = confirm("Tem certeza que deseja apagar todos os pontos e dados salvos?");
         if (!confirmar) return;
 
         points = [];
         selectedPoints = [];
         lineDrawn = false;
-        document.getElementById("aRange").disabled = true;
-        document.getElementById("bRange").disabled = true;
-        updateTable();
-        drawGraph();
-        document.getElementById("additionalInfo").textContent = ""; // Limpa a mensagem
+        a = 1;
+        b = 0;
+        zoomLevel = 1;
         localStorage.removeItem(STORAGE_KEY);
+        refreshAll();
       }
 
-      document
-        .getElementById("zoomSelect")
-        .addEventListener("change", function () {
-          zoomLevel = parseFloat(this.value);
-          document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
-          drawGraph();
-          saveState();
-        });
+      document.getElementById("zoomSelect").addEventListener("change", function () {
+        zoomLevel = parseFloat(this.value);
+        refreshAll();
+        saveState();
+      });
 
       document.getElementById("aRange").addEventListener("input", function () {
+        if (a === null) return;
         a = parseFloat(this.value);
-        document.getElementById("aValue").textContent = a.toFixed(2);
-        updateExpression();
-        drawGraph();
-        highlightOffLinePoints();
-        updateSelectedPointsBasedOnLine();
+        selectedPoints.forEach((point) => {
+          point.y = a * point.x + b;
+        });
+        refreshAll();
         saveState();
       });
 
       document.getElementById("bRange").addEventListener("input", function () {
+        if (a === null) return;
         b = parseFloat(this.value);
-        document.getElementById("bValue").textContent = b.toFixed(2);
-        updateExpression();
-        drawGraph();
-
-        // Atualiza a posição dos pontos selecionados se a reta for vertical
-        if (a === null) {
-          selectedPoints.forEach((point) => {
-            point.x = b; // Atualiza o x para o valor de b
-          });
-        }
-
-        highlightOffLinePoints();
-        updateSelectedPointsBasedOnLine();
+        selectedPoints.forEach((point) => {
+          point.y = a * point.x + b;
+        });
+        refreshAll();
         saveState();
       });
 
-      document
-        .getElementById("createPointBtn")
-        .addEventListener("click", function () {
-          canvas.addEventListener("click", createPointOnClick);
-        });
+      document.getElementById("createPointBtn").addEventListener("click", function () {
+        canvas.addEventListener("click", createPointOnClick, { once: true });
+      });
 
       function createPointOnClick(event) {
-        const { offsetX, offsetY } = event;
-        const scale = 50 * zoomLevel;
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const x = (offsetX - centerX) / scale;
-        const y = (centerY - offsetY) / scale;
-
-        points.push({ x, y });
-        drawGraph();
-        updateTable();
+        const coordinate = getMouseGraphCoordinates(event);
+        points.push({ x: coordinate.x, y: coordinate.y });
+        refreshAll();
         saveState();
-        canvas.removeEventListener("click", createPointOnClick);
-      }
-
-      function updateSelectedPointsBasedOnLine() {
-        const scale = 50 * zoomLevel;
-        selectedPoints.forEach((point) => {
-          const newY = a !== null ? a * point.x + b : null;
-          if (newY !== null) {
-            point.y = newY;
-          }
-        });
-        drawGraph();
-        updateTable();
       }
 
       loadState();
-      syncInterfaceFromState();
+      refreshAll();
     </script>
   </body>
 </html>
