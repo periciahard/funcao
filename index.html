@@ -46,6 +46,11 @@
         border: 2px solid #000;
         overflow: hidden;
         touch-action: none;
+        cursor: grab;
+      }
+
+      .graph-container.dragging {
+        cursor: grabbing;
       }
 
       canvas {
@@ -193,33 +198,63 @@
         margin: 4px 0;
       }
 
+      .help-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+      }
+
       .help-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 17px;
-        height: 17px;
+        width: 16px;
+        height: 16px;
         padding: 0;
         margin-left: 4px;
         border-radius: 50%;
         border: 1px solid #777;
         background: #f4f4f4;
         font-weight: bold;
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1;
+        cursor: help;
       }
 
-      .help-panel {
+      .help-tooltip {
         display: none;
-        background: #fffbe8;
-        border: 1px solid #d8c56e;
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        transform: translateX(-50%);
+        width: min(260px, 70vw);
+        background: #222;
+        color: #fff;
         border-radius: 7px;
-        padding: 7px;
-        font-size: 0.84em;
+        padding: 8px;
+        font-size: 12px;
         line-height: 1.3;
+        text-align: left;
+        z-index: 2000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
       }
 
-      .help-panel.show { display: block; }
+      .help-tooltip::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: #222 transparent transparent transparent;
+      }
+
+      .help-wrap:hover .help-tooltip,
+      .help-wrap:focus-within .help-tooltip {
+        display: block;
+      }
 
       button,
       input,
@@ -239,6 +274,12 @@
         display: flex;
         gap: 6px;
         align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .hint-line {
+        font-size: 12px;
+        color: #333;
       }
 
       .image-container {
@@ -292,7 +333,11 @@
       <div class="left-panel">
         <div class="top-actions">
           <button id="createPointBtn">Criar ponto no gráfico</button>
-          <small>Use os botões ? para ver as instruções.</small>
+          <span class="help-wrap">
+            <button class="help-btn" type="button" aria-label="Instruções de uso">?</button>
+            <span class="help-tooltip">Para selecionar um ponto, dê dois cliques sobre ele. Para mover um ponto, arraste-o. Para mover o gráfico inteiro, clique em uma área vazia do plano e arraste em qualquer direção.</span>
+          </span>
+          <span class="hint-line">Arraste o fundo do plano para mover o gráfico.</span>
         </div>
         <div class="graph-container" id="graphContainer">
           <canvas id="graphCanvas" width="500" height="500"></canvas>
@@ -307,35 +352,34 @@
         <div class="tangent-box" id="tangentBox">
           <h3>
             Tangente da reta
-            <button class="help-btn" type="button" data-help="tangentHelp">?</button>
+            <span class="help-wrap">
+              <button class="help-btn" type="button" aria-label="Ajuda sobre tangente">?</button>
+              <span class="help-tooltip">A tangente do ângulo da reta é calculada por tg(α) = Δy / Δx. O programa usa como P₁ o ponto mais à esquerda, evitando erro de sinal pela ordem do clique.</span>
+            </span>
           </h3>
           <div id="tangentInfo">Selecione dois pontos e trace a reta.</div>
         </div>
 
         <div class="explanation-box">
-          <h3>Leitura da reta</h3>
+          <h3>
+            Leitura da reta
+            <span class="help-wrap">
+              <button class="help-btn" type="button" aria-label="Ajuda sobre leitura da reta">?</button>
+              <span class="help-tooltip">O coeficiente angular a indica se a reta sobe ou desce. O coeficiente linear b indica onde a reta corta o eixo y.</span>
+            </span>
+          </h3>
           <p id="slopeExplanation">Trace uma reta para saber se ela é crescente ou decrescente.</p>
           <p id="linearExplanation">Trace uma reta para identificar o coeficiente linear.</p>
-          <p>
-            Como usar
-            <button class="help-btn" type="button" data-help="usageHelp">?</button>
-            Coef. angular
-            <button class="help-btn" type="button" data-help="slopeHelp">?</button>
-            Coef. linear
-            <button class="help-btn" type="button" data-help="linearHelp">?</button>
-          </p>
         </div>
-
-        <div class="help-panel" id="helpPanel"></div>
 
         <div id="sliders" class="sliders">
           <div class="slider-container">
-            <label for="aRange">Coef. a:<button class="help-btn" type="button" data-help="slopeHelp">?</button></label>
+            <label for="aRange">Coef. a:<span class="help-wrap"><button class="help-btn" type="button" aria-label="Ajuda sobre coeficiente angular">?</button><span class="help-tooltip">O coeficiente angular a mede a inclinação da reta. Se a > 0, a reta é crescente; se a < 0, é decrescente.</span></span></label>
             <input type="range" id="aRange" min="-5" max="5" step="0.1" value="1" disabled />
             <span id="aValue">1</span>
           </div>
           <div class="slider-container">
-            <label for="bRange">Coef. b:<button class="help-btn" type="button" data-help="linearHelp">?</button></label>
+            <label for="bRange">Coef. b:<span class="help-wrap"><button class="help-btn" type="button" aria-label="Ajuda sobre coeficiente linear">?</button><span class="help-tooltip">O coeficiente linear b é o ponto em que a reta corta o eixo y. Se b é negativo, o corte fica abaixo da origem.</span></span></label>
             <input type="range" id="bRange" min="-5" max="5" step="0.1" value="0" disabled />
             <span id="bValue">0</span>
           </div>
@@ -395,6 +439,11 @@
       let b = 0;
       let movingPoint = null;
       let creatingPoint = false;
+      let isPanning = false;
+      let lastPanPosition = null;
+      let panX = 0;
+      let panY = 0;
+      let suppressNextClick = false;
 
       const canvas = document.getElementById("graphCanvas");
       const ctx = canvas.getContext("2d");
@@ -408,8 +457,12 @@
       canvas.addEventListener("mouseup", handleMouseUp);
       canvas.addEventListener("mouseleave", () => {
         movingPoint = null;
+        isPanning = false;
+        lastPanPosition = null;
+        graphContainer.classList.remove("dragging");
         hideTooltip();
       });
+      window.addEventListener("mouseup", handleMouseUp);
       canvas.addEventListener("mousemove", handleMouseMove);
       canvas.addEventListener("dblclick", handleDoubleClick);
       canvas.addEventListener("click", handleCanvasClick);
@@ -424,6 +477,8 @@
           lineDrawn,
           a,
           b,
+          panX,
+          panY,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
@@ -438,6 +493,8 @@
           lineDrawn = Boolean(state.lineDrawn);
           a = state.a ?? 1;
           b = state.b ?? 0;
+          panX = state.panX ?? 0;
+          panY = state.panY ?? 0;
           selectedPoints = Array.isArray(state.selectedPointIndexes)
             ? state.selectedPointIndexes.map((index) => points[index]).filter(Boolean)
             : [];
@@ -473,8 +530,8 @@
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         return {
-          x: centerX + point.x * scale,
-          y: centerY - point.y * scale,
+          x: centerX + (point.x - panX) * scale,
+          y: centerY - (point.y - panY) * scale,
         };
       }
 
@@ -483,8 +540,8 @@
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         return {
-          x: (offsetX - centerX) / scale,
-          y: (centerY - offsetY) / scale,
+          x: panX + (offsetX - centerX) / scale,
+          y: panY + (centerY - offsetY) / scale,
         };
       }
 
@@ -572,23 +629,6 @@
         }
       }
 
-      const HELP_TEXTS = {
-        usageHelp: "Para selecionar um ponto, dê dois cliques sobre ele. Se quiser apagar apenas um ponto, deixe somente esse ponto selecionado e clique em ‘Apagar ponto selecionado’. Para criar ponto pelo gráfico, clique em ‘Criar ponto no gráfico’ e depois clique no local desejado.",
-        slopeHelp: "O coeficiente angular a indica a inclinação da reta. Se a > 0, a reta é crescente. Se a < 0, a reta é decrescente. Se a = 0, a reta é horizontal/constante.",
-        linearHelp: "O coeficiente linear b indica onde a reta corta o eixo y. Se b é negativo, o corte ocorre abaixo da origem; se b é positivo, ocorre acima da origem.",
-        tangentHelp: "A tangente do ângulo da reta é calculada por tg(α) = Δy / Δx. O programa toma como P₁ o ponto mais à esquerda, evitando troca de sinal por ordem de seleção."
-      };
-
-      document.querySelectorAll(".help-btn").forEach((button) => {
-        button.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const key = button.dataset.help;
-          const panel = document.getElementById("helpPanel");
-          panel.textContent = HELP_TEXTS[key] || "Ajuda não disponível.";
-          panel.classList.toggle("show", true);
-        });
-      });
-
       function handleMouseDown(e) {
         const pos = getEventCanvasPosition(e);
         const clicked = canvasToGraph(pos.offsetX, pos.offsetY);
@@ -599,11 +639,23 @@
           if (dist < 0.2) clickedPoint = point;
         });
 
-        if (clickedPoint) movingPoint = clickedPoint;
+        if (clickedPoint) {
+          movingPoint = clickedPoint;
+          isPanning = false;
+        } else if (!creatingPoint) {
+          isPanning = true;
+          lastPanPosition = pos;
+          graphContainer.classList.add("dragging");
+          hideTooltip();
+        }
       }
 
       function handleMouseUp() {
+        if (isPanning) saveState();
         movingPoint = null;
+        isPanning = false;
+        lastPanPosition = null;
+        graphContainer.classList.remove("dragging");
       }
 
       function handleMouseMove(e) {
@@ -620,6 +672,16 @@
 
           refreshAll();
           saveState();
+        } else if (isPanning && lastPanPosition) {
+          const scale = 50 * zoomLevel;
+          const dx = pos.offsetX - lastPanPosition.offsetX;
+          const dy = pos.offsetY - lastPanPosition.offsetY;
+          panX -= dx / scale;
+          panY += dy / scale;
+          lastPanPosition = pos;
+          suppressNextClick = true;
+          drawGraph();
+          hideTooltip();
         } else {
           updateLineTooltip(pos);
         }
@@ -648,6 +710,10 @@
       }
 
       function handleCanvasClick(e) {
+        if (suppressNextClick) {
+          suppressNextClick = false;
+          return;
+        }
         if (!creatingPoint) return;
         const pos = getEventCanvasPosition(e);
         const point = canvasToGraph(pos.offsetX, pos.offsetY);
@@ -701,39 +767,56 @@
         ctx.strokeStyle = "#ddd";
         ctx.lineWidth = 1;
 
-        for (let x = -centerX; x <= centerX; x += scale) {
+        const xMin = panX - centerX / scale;
+        const xMax = panX + centerX / scale;
+        const yMin = panY - centerY / scale;
+        const yMax = panY + centerY / scale;
+
+        const firstX = Math.floor(xMin);
+        const lastX = Math.ceil(xMax);
+        for (let gx = firstX; gx <= lastX; gx += 1) {
+          const screen = graphToCanvas({ x: gx, y: 0 });
           ctx.beginPath();
-          ctx.moveTo(centerX + x, 0);
-          ctx.lineTo(centerX + x, canvas.height);
+          ctx.moveTo(screen.x, 0);
+          ctx.lineTo(screen.x, canvas.height);
           ctx.stroke();
         }
 
-        for (let y = -centerY; y <= centerY; y += scale) {
+        const firstY = Math.floor(yMin);
+        const lastY = Math.ceil(yMax);
+        for (let gy = firstY; gy <= lastY; gy += 1) {
+          const screen = graphToCanvas({ x: 0, y: gy });
           ctx.beginPath();
-          ctx.moveTo(0, centerY + y);
-          ctx.lineTo(canvas.width, centerY + y);
+          ctx.moveTo(0, screen.y);
+          ctx.lineTo(canvas.width, screen.y);
           ctx.stroke();
         }
 
+        const origin = graphToCanvas({ x: 0, y: 0 });
         ctx.strokeStyle = "black";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(centerX, 0);
-        ctx.lineTo(centerX, canvas.height);
-        ctx.moveTo(0, centerY);
-        ctx.lineTo(canvas.width, centerY);
+        ctx.moveTo(origin.x, 0);
+        ctx.lineTo(origin.x, canvas.height);
+        ctx.moveTo(0, origin.y);
+        ctx.lineTo(canvas.width, origin.y);
         ctx.stroke();
 
         ctx.fillStyle = "black";
         ctx.font = "10px Arial";
-        for (let x = -centerX; x <= centerX; x += scale) {
-          const value = (x / scale).toFixed(0);
-          ctx.fillText(value, centerX + x - 10, centerY + 15);
+        for (let gx = firstX; gx <= lastX; gx += 1) {
+          const screen = graphToCanvas({ x: gx, y: 0 });
+          if (screen.x >= -20 && screen.x <= canvas.width + 20) {
+            ctx.fillText(String(gx), screen.x - 8, Math.min(Math.max(origin.y + 15, 12), canvas.height - 4));
+          }
         }
 
-        for (let y = -centerY; y <= centerY; y += scale) {
-          const value = -(y / scale).toFixed(0);
-          if (value !== "0") ctx.fillText(value, centerX + 5, centerY + y + 5);
+        for (let gy = firstY; gy <= lastY; gy += 1) {
+          if (gy === 0) continue;
+          const screen = graphToCanvas({ x: 0, y: gy });
+          if (screen.y >= -20 && screen.y <= canvas.height + 20) {
+            ctx.fillText(String(gy), Math.min(Math.max(origin.x + 5, 4), canvas.width - 22), screen.y + 4);
+          }
         }
       }
 
@@ -790,16 +873,18 @@
         ctx.lineWidth = 2;
         ctx.beginPath();
 
-        const startX = -canvas.width / 2 / scale;
-        const endX = canvas.width / 2 / scale;
+        const startX = panX - canvas.width / 2 / scale;
+        const endX = panX + canvas.width / 2 / scale;
 
         if (a === null) {
-          const x = canvas.width / 2 + b * scale;
+          const x = graphToCanvas({ x: b, y: 0 }).x;
           ctx.moveTo(x, 0);
           ctx.lineTo(x, canvas.height);
         } else {
-          ctx.moveTo(canvas.width / 2 + startX * scale, canvas.height / 2 - (a * startX + b) * scale);
-          ctx.lineTo(canvas.width / 2 + endX * scale, canvas.height / 2 - (a * endX + b) * scale);
+          const start = graphToCanvas({ x: startX, y: a * startX + b });
+          const end = graphToCanvas({ x: endX, y: a * endX + b });
+          ctx.moveTo(start.x, start.y);
+          ctx.lineTo(end.x, end.y);
         }
         ctx.stroke();
       }
@@ -965,6 +1050,8 @@
         a = 1;
         b = 0;
         zoomLevel = 1;
+        panX = 0;
+        panY = 0;
         localStorage.removeItem(STORAGE_KEY);
         refreshAll();
       }

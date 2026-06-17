@@ -1,28 +1,31 @@
 # Plano Cartesiano Interativo - V1
 
-Aplicativo educacional em HTML, CSS e JavaScript para trabalhar plano cartesiano, pontos, função afim, coeficiente angular, coeficiente linear e tangente da reta.
+Aplicativo educacional em HTML, CSS e JavaScript puro para estudo de plano cartesiano, função afim, coeficiente angular, coeficiente linear e tangente da reta.
 
-## Recursos da V1
+## Recursos
 
 - Criação de pontos pelo gráfico ou por coordenadas.
 - Seleção de pontos com duplo clique.
-- Traçado da reta por dois pontos.
-- Correção automática do sinal na equação da reta.
-- Cálculo correto da tangente: tg(α) = Δy / Δx, usando P1 como o ponto mais à esquerda.
+- Movimentação de pontos por arraste.
+- Movimentação do gráfico inteiro ao arrastar o fundo do plano.
+- Traçado de reta por dois pontos.
+- Cálculo da equação da reta com jogo de sinal correto.
+- Cálculo de tg(α) = Δy / Δx.
 - Desenho do triângulo da tangente no gráfico.
-- Coordenadas exibidas ao passar o cursor próximo à reta.
-- Explicações com botões de interrogação.
-- Explicação automática sobre reta crescente, decrescente ou constante.
-- Explicação automática sobre coeficiente linear positivo, negativo ou nulo.
-- Apagar apenas um ponto selecionado.
-- Apagar todos os dados somente mediante confirmação.
+- Coordenadas da reta ao passar o cursor sobre ela.
+- Explicações didáticas por caixas de ajuda ao passar o cursor sobre “?”.
+- Exclusão de apenas um ponto selecionado.
 - Salvamento automático no navegador.
-- Versão exibida na tela.
+- Dados apagados somente por solicitação do usuário.
 
 ## Como publicar no GitHub Pages
 
 1. Crie um repositório no GitHub.
-2. Envie o arquivo `index.html` para a raiz do repositório.
-3. Acesse **Settings > Pages**.
-4. Em **Branch**, selecione `main` e a pasta `/root`.
-5. Salve e aguarde o GitHub gerar o link.
+2. Envie os arquivos `index.html` e `README.md`.
+3. Vá em **Settings > Pages**.
+4. Em **Source**, selecione a branch principal e a pasta raiz.
+5. Salve e aguarde o link ser gerado.
+
+## Versão
+
+V1
