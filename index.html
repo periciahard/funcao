@@ -50,8 +50,8 @@
       }
 
       .brand-logo {
-        height: 46px;
-        max-width: 260px;
+        height: 56px;
+        max-width: 360px;
         object-fit: contain;
       }
 
@@ -369,7 +369,6 @@
             <button class="help-btn" type="button" aria-label="Instruções de uso">?</button>
             <span class="help-tooltip">Para selecionar um ponto, dê dois cliques sobre ele. Para mover um ponto, arraste-o. Para mover o gráfico inteiro, clique em uma área vazia do plano e arraste em qualquer direção.</span>
           </span>
-          <span class="hint-line">Arraste o fundo do plano para mover o gráfico.</span>
         </div>
         <div class="graph-container" id="graphContainer">
           <canvas id="graphCanvas" width="500" height="500"></canvas>
@@ -892,7 +891,11 @@
 
       function drawGraph() {
         const scale = 50 * zoomLevel;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
         drawGrid(scale);
         drawLine(scale);
         drawTangentTriangle();
@@ -1160,24 +1163,98 @@
         return out;
       }
 
+      function splitPdfLine(text, maxChars = 86) {
+        const words = escapePdfText(text).split(/\s+/).filter(Boolean);
+        const lines = [];
+        let current = "";
+        words.forEach((word) => {
+          if (!current) current = word;
+          else if ((current + " " + word).length <= maxChars) current += " " + word;
+          else {
+            lines.push(current);
+            current = word;
+          }
+        });
+        if (current) lines.push(current);
+        return lines.length ? lines : [""];
+      }
+
+      function makeGraphDataUrlForPdf() {
+        refreshAll();
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = canvas.width;
+        exportCanvas.height = canvas.height;
+        const exportCtx = exportCanvas.getContext("2d");
+        exportCtx.fillStyle = "#ffffff";
+        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        exportCtx.drawImage(canvas, 0, 0);
+        return exportCanvas.toDataURL("image/jpeg", 1.0);
+      }
+
+      function getPdfInfoLines() {
+        const now = new Date().toLocaleString("pt-BR");
+        const equation = document.getElementById("expression").textContent;
+        const slopeText = document.getElementById("slopeExplanation").textContent;
+        const linearText = document.getElementById("linearExplanation").textContent;
+        const linhas = [
+          `Equacao da reta: ${equation}`,
+          `Exportado em: ${now}`,
+        ];
+
+        if (lineDrawn && selectedPoints.length === 2) {
+          const ordered = getOrderedSelectedPoints();
+          const p1 = ordered[0];
+          const p2 = ordered[1];
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          if (Math.abs(dx) < 0.000001) {
+            linhas.push("Tangente: reta vertical; Delta x = 0; tangente nao definida.");
+          } else {
+            linhas.push(`Tangente: Delta y = ${formatNumber(dy)}; Delta x = ${formatNumber(dx)}; tg(alfa) = ${formatNumber(dy / dx)}.`);
+          }
+        } else {
+          linhas.push("Tangente: selecione dois pontos e trace a reta para calcular.");
+        }
+
+        linhas.push(`Leitura: ${slopeText}`);
+        linhas.push(`Coeficiente linear: ${linearText}`);
+
+        if (points.length) {
+          linhas.push("Pontos registrados:");
+          points.forEach((p, i) => linhas.push(`P${i + 1}: x = ${formatNumber(p.x)}; y = ${formatNumber(p.y)}`));
+        } else {
+          linhas.push("Pontos registrados: nenhum ponto informado.");
+        }
+        return linhas;
+      }
+
       function buildSimplePdf({ graphDataUrl, lines }) {
         const imgBytes = dataURLToBinary(graphDataUrl);
         const pageW = 595.28;
         const pageH = 841.89;
-        const imgW = 430;
-        const imgH = 430;
-        const imgX = 82;
-        const imgY = 255;
+        const imgW = 475;
+        const imgH = 475;
+        const imgX = 60;
+        const imgY = 300;
 
         const textOps = [];
-        textOps.push("BT /F1 18 Tf 50 805 Td (Plano Cartesiano Interativo) Tj ET");
-        textOps.push(`BT /F1 11 Tf 50 786 Td (Atelier Function - Versao ${escapePdfText(APP_VERSION)}) Tj ET`);
-        let y = 230;
+        const addText = (text, x, y, size = 10) => {
+          textOps.push(`BT /F1 ${size} Tf ${x} ${y} Td (${escapePdfText(text)}) Tj ET`);
+        };
+
+        addText("Plano Cartesiano Interativo", 50, 812, 18);
+        addText(`Atelier Function - Versao ${APP_VERSION}`, 50, 792, 11);
+        addText("Grafico", 50, 775, 11);
+
+        let y = 275;
         lines.forEach((line, index) => {
-          if (y < 55) return;
-          const size = index === 0 ? 14 : 10;
-          textOps.push(`BT /F1 ${size} Tf 50 ${y} Td (${escapePdfText(line).slice(0, 100)}) Tj ET`);
-          y -= index === 0 ? 20 : 14;
+          const max = index <= 1 ? 88 : 96;
+          splitPdfLine(line, max).forEach((part) => {
+            if (y < 45) return;
+            addText(part, 50, y, index === 0 ? 12 : 9.5);
+            y -= index === 0 ? 16 : 12;
+          });
+          y -= 2;
         });
 
         const content = `q\n${imgW} 0 0 ${imgH} ${imgX} ${imgY} cm\n/Im1 Do\nQ\n` + textOps.join("\n");
@@ -1218,29 +1295,10 @@
       }
 
       function exportPDF() {
-        refreshAll();
-        const previousFill = ctx.fillStyle;
-        const graphDataUrl = canvas.toDataURL("image/jpeg", 0.92);
-        ctx.fillStyle = previousFill;
-        const equation = document.getElementById("expression").textContent;
-        const tangentText = document.getElementById("tangentInfo").innerText;
-        const slopeText = document.getElementById("slopeExplanation").textContent;
-        const linearText = document.getElementById("linearExplanation").textContent;
-        const now = new Date().toLocaleString("pt-BR");
-        const pointsText = points.length
-          ? points.map((p, i) => `P${i + 1}: x=${formatNumber(p.x)}, y=${formatNumber(p.y)}`).join(" | ")
-          : "Nenhum ponto registrado.";
-
+        const graphDataUrl = makeGraphDataUrlForPdf();
         const pdf = buildSimplePdf({
           graphDataUrl,
-          lines: [
-            equation,
-            `Exportado em: ${now}`,
-            `Tangente: ${tangentText}`,
-            slopeText,
-            linearText,
-            `Pontos: ${pointsText}`,
-          ],
+          lines: getPdfInfoLines(),
         });
 
         const url = URL.createObjectURL(pdf);
