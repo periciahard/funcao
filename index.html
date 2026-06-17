@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plano Cartesiano Interativo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        width: 90vw;
+        max-width: 1000px;
+        height: 90vh;
+        position: relative; /* Para permitir posicionamento da imagem */
+      }
+
+      .graph-container {
+        position: relative;
+        width: 40vw;
+        height: 50vw;
+        max-width: 500px;
+        max-height: 500px;
+        background-color: #ffffff;
+        border: 2px solid #000;
+        margin-right: 10px;
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
+        width: 35vw;
+        max-width: 350px;
+      }
+
+      .expression {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .additional-info {
+        font-size: 0.9em;
+        color: red;
+        text-align: center;
+        margin-top: 5px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+        font-size: 0.85em;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 4px;
+        text-align: center;
+      }
+
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .slider-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .point-input {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .point-input input {
+        width: 50px;
+        margin-right: 5px;
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+
+      .sliders,
+      .table {
+        margin-top: 10px;
+      }
+
+      .highlight {
+        background-color: lightgray;
+      }
+
+      .selected {
+        stroke: black; /* Contorno preto para o ponto selecionado */
+        stroke-width: 2;
+      }
+
+      /* Estilo para a imagem no canto inferior direito */
+      .image-container {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        margin: 10px;
+      }
+
+      .image-container img {
+        width: 250px; /* Define a largura da imagem */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <button id="createPointBtn">Criar Ponto</button>
+      <div class="graph-container">
+        <canvas id="graphCanvas" width="500" height="500"></canvas>
+      </div>
+      <div class="controls">
+        <div class="expression" id="expression">y = ax + b</div>
+        <div class="additional-info" id="additionalInfo"></div>
+        <div id="sliders" class="sliders">
+          <div class="slider-container">
+            <label for="aRange">Coeficiente a:</label>
+            <input
+              type="range"
+              id="aRange"
+              min="-5"
+              max="5"
+              step="0.1"
+              value="1"
+              disabled
+            />
+            <span id="aValue">1</span>
+          </div>
+          <div class="slider-container">
+            <label for="bRange">Coeficiente b:</label>
+            <input
+              type="range"
+              id="bRange"
+              min="-5"
+              max="5"
+              step="0.1"
+              value="0"
+              disabled
+            />
+            <span id="bValue">0</span>
+          </div>
+          <div class="slider-container">
+            <label for="zoomSelect">Zoom:</label>
+            <select id="zoomSelect">
+              <option value="0.25">0,25x</option>
+              <option value="0.5">0,5x</option>
+              <option value="1" selected>1x</option>
+            </select>
+            <span id="zoomValue">1x</span>
+          </div>
+        </div>
+        <div class="table">
+          <h3 style="text-align: center">Tabela de Valores</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>x</th>
+                <th>y</th>
+              </tr>
+            </thead>
+            <tbody id="valueTable"></tbody>
+          </table>
+        </div>
+        <div class="point-input">
+          <input type="number" id="xPoint" placeholder="x" />
+          <input type="number" id="yPoint" placeholder="y" />
+          <button onclick="addPoint()">Adicionar Ponto</button>
+        </div>
+        <div class="buttons">
+          <button onclick="drawLineFromPoints()">
+            Traçar Reta pelos Pontos
+          </button>
+          <button onclick="clearPoints()">Apagar Pontos</button>
+        </div>
+      </div>
+
+      <!-- Container da imagem no canto inferior direito -->
+      <div class="image-container">
+        <a href="https://ibb.co/WWTt7CV">
+          <img
+            src="https://i.ibb.co/bgfJYtb/Apresenta-o-de-Slides-Corporativo-Preto-e-Amarelo.png"
+            alt="Apresentação Corporativa"
+            border="0"
+          />
+        </a>
+      </div>
+    </div>
+
+    <script>
+      let zoomLevel = 1;
+      let points = [];
+      let selectedPoints = [];
+      let lineDrawn = false;
+      let a = 1,
+        b = 0;
+      let movingPoint = null; // Variável para o ponto em movimento
+
+      const canvas = document.getElementById("graphCanvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.addEventListener("mousedown", (e) => handleMouseDown(e));
+      canvas.addEventListener("mouseup", (e) => handleMouseUp(e));
+      canvas.addEventListener("mousemove", (e) => handleMouseMove(e));
+      canvas.addEventListener("dblclick", (e) => handleDoubleClick(e)); // Adiciona o evento de duplo clique
+
+      function handleMouseDown(e) {
+        const { offsetX, offsetY } = e;
+        const scale = 50 * zoomLevel;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const clickedX = (offsetX - centerX) / scale;
+        const clickedY = (centerY - offsetY) / scale;
+
+        let clickedPoint = null;
+        points.forEach((point) => {
+          const dist = Math.sqrt(
+            (point.x - clickedX) ** 2 + (point.y - clickedY) ** 2
+          );
+          if (dist < 0.2) {
+            clickedPoint = point;
+          }
+        });
+
+        if (clickedPoint) {
+          movingPoint = clickedPoint; // Armazena o ponto que será movido
+        }
+      }
+
+      function handleMouseUp() {
+        movingPoint = null; // Reseta o ponto em movimento
+      }
+
+      function handleMouseMove(e) {
+        if (movingPoint) {
+          const { offsetX, offsetY } = e;
+          const scale = 50 * zoomLevel;
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          const newX = (offsetX - centerX) / scale;
+          const newY = (centerY - offsetY) / scale;
+
+          movingPoint.x = newX; // Atualiza a posição do ponto
+          movingPoint.y = newY; // Atualiza a posição do ponto
+
+          // Se o ponto movido for parte da linha, recalcula a reta
+          if (selectedPoints.includes(movingPoint)) {
+            drawLineFromPoints();
+          }
+
+          drawGraph();
+          updateTable();
+        }
+      }
+
+      function handleDoubleClick(e) {
+        const { offsetX, offsetY } = e;
+        const scale = 50 * zoomLevel;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const clickedX = (offsetX - centerX) / scale;
+        const clickedY = (centerY - offsetY) / scale;
+
+        let clickedPoint = null;
+        points.forEach((point) => {
+          const dist = Math.sqrt(
+            (point.x - clickedX) ** 2 + (point.y - clickedY) ** 2
+          );
+          if (dist < 0.2) {
+            clickedPoint = point;
+          }
+        });
+
+        if (clickedPoint) {
+          if (selectedPoints.includes(clickedPoint)) {
+            selectedPoints = selectedPoints.filter((p) => p !== clickedPoint);
+          } else {
+            if (selectedPoints.length < 2) {
+              selectedPoints.push(clickedPoint);
+            }
+          }
+
+          drawGraph();
+        }
+      }
+
+      function drawGrid(scale) {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        ctx.strokeStyle = "#ddd";
+        ctx.lineWidth = 1;
+
+        for (let x = -centerX; x <= centerX; x += scale) {
+          ctx.beginPath();
+          ctx.moveTo(centerX + x, 0);
+          ctx.lineTo(centerX + x, canvas.height);
+          ctx.stroke();
+        }
+
+        for (let y = -centerY; y <= centerY; y += scale) {
+          ctx.beginPath();
+          ctx.moveTo(0, centerY + y);
+          ctx.lineTo(canvas.width, centerY + y);
+          ctx.stroke();
+        }
+
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(centerX, 0);
+        ctx.lineTo(centerX, canvas.height);
+        ctx.moveTo(0, centerY);
+        ctx.lineTo(canvas.width, centerY);
+        ctx.stroke();
+
+        ctx.fillStyle = "black";
+        ctx.font = "10px Arial";
+        for (let x = -centerX; x <= centerX; x += scale) {
+          const value = (x / scale).toFixed(0);
+          ctx.fillText(value, centerX + x - 10, centerY + 15);
+        }
+
+        for (let y = -centerY; y <= centerY; y += scale) {
+          const value = -(y / scale).toFixed(0);
+          if (value !== "0") {
+            ctx.fillText(value, centerX + 5, centerY + y + 5);
+          }
+        }
+      }
+
+      function drawPoints(scale) {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        points.forEach((point) => {
+          ctx.beginPath();
+          ctx.arc(
+            centerX + point.x * scale,
+            centerY - point.y * scale,
+            5,
+            0,
+            Math.PI * 2
+          );
+          ctx.fillStyle = selectedPoints.includes(point) ? "orange" : "blue"; // Cor do ponto selecionado
+          ctx.fill();
+
+          if (selectedPoints.includes(point)) {
+            ctx.strokeStyle = "black"; // Contorno preto para o ponto selecionado
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+        });
+      }
+
+      function drawLineFromPoints() {
+        if (selectedPoints.length !== 2) return;
+        const point1 = selectedPoints[0];
+        const point2 = selectedPoints[1];
+
+        if (point1.x !== point2.x) {
+          // Reta não vertical
+          a = (point2.y - point1.y) / (point2.x - point1.x);
+          b = point1.y - a * point1.x;
+        } else {
+          // Reta vertical
+          a = null;
+          b = point1.x;
+        }
+
+        lineDrawn = true;
+        updateExpression();
+        drawGraph();
+        highlightOffLinePoints();
+        enableSliders(); // Habilita os sliders apenas após a reta ser desenhada
+      }
+
+      function drawGraph() {
+        const scale = 50 * zoomLevel;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawGrid(scale);
+        drawLine(scale);
+        drawPoints(scale);
+      }
+
+      function drawLine(scale) {
+        if (!lineDrawn) return;
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const startX = -canvas.width / 2 / scale;
+        const endX = canvas.width / 2 / scale;
+
+        if (a === null) {
+          // Reta vertical
+          ctx.moveTo(canvas.width / 2 + b * scale, 0);
+          ctx.lineTo(canvas.width / 2 + b * scale, canvas.height);
+        } else {
+          ctx.moveTo(
+            canvas.width / 2 + startX * scale,
+            canvas.height / 2 - (a * startX + b) * scale
+          );
+          ctx.lineTo(
+            canvas.width / 2 + endX * scale,
+            canvas.height / 2 - (a * endX + b) * scale
+          );
+        }
+        ctx.stroke();
+      }
+
+      function formatEquation(a, b) {
+        const aText = a.toFixed(2);
+
+        if (b < 0) {
+          return `y = ${aText}x - ${Math.abs(b).toFixed(2)}`;
+        }
+
+        if (b > 0) {
+          return `y = ${aText}x + ${b.toFixed(2)}`;
+        }
+
+        return `y = ${aText}x`;
+      }
+
+      function updateExpression() {
+        const additionalInfo = document.getElementById("additionalInfo");
+        const expression = document.getElementById("expression");
+
+        if (a === null) {
+          // Reta vertical
+          expression.textContent = `x = ${b.toFixed(2)}`;
+          additionalInfo.textContent =
+            "A reta vertical não representa uma função porque, para um valor de x específico, existem diversos valores de y.";
+        } else {
+          expression.textContent = formatEquation(a, b);
+          additionalInfo.textContent = ""; // Limpa a mensagem
+        }
+      }
+
+      function enableSliders() {
+        document.getElementById("aRange").disabled = false;
+        document.getElementById("bRange").disabled = false;
+      }
+
+      function updateTable() {
+        const tableBody = document.getElementById("valueTable");
+        tableBody.innerHTML = "";
+        points.forEach((point) => {
+          const row = document.createElement("tr");
+          const xCell = document.createElement("td");
+          const yCell = document.createElement("td");
+          xCell.textContent = point.x.toFixed(2);
+          yCell.textContent = point.y.toFixed(2);
+          row.appendChild(xCell);
+          row.appendChild(yCell);
+          tableBody.appendChild(row);
+        });
+      }
+
+      function highlightOffLinePoints() {
+        if (!lineDrawn) return;
+
+        const table = document.getElementById("valueTable");
+        table.querySelectorAll("tr").forEach((row, index) => {
+          const point = points[index];
+          const yOnLine = a !== null ? a * point.x + b : null;
+          const errorMargin = 0.001;
+          if (
+            yOnLine === null ||
+            (Math.abs(point.y - yOnLine) > errorMargin && a !== null)
+          ) {
+            row.classList.add("highlight");
+          } else {
+            row.classList.remove("highlight");
+          }
+        });
+      }
+
+      function addPoint() {
+        const x = parseFloat(document.getElementById("xPoint").value);
+        const y = parseFloat(document.getElementById("yPoint").value);
+        if (!isNaN(x) && !isNaN(y)) {
+          points.push({ x, y });
+          updateTable();
+          drawGraph();
+        }
+      }
+
+      function clearPoints() {
+        points = [];
+        selectedPoints = [];
+        lineDrawn = false;
+        document.getElementById("aRange").disabled = true;
+        document.getElementById("bRange").disabled = true;
+        updateTable();
+        drawGraph();
+        document.getElementById("additionalInfo").textContent = ""; // Limpa a mensagem
+      }
+
+      document
+        .getElementById("zoomSelect")
+        .addEventListener("change", function () {
+          zoomLevel = parseFloat(this.value);
+          document.getElementById("zoomValue").textContent = `${zoomLevel}x`;
+          drawGraph();
+        });
+
+      document.getElementById("aRange").addEventListener("input", function () {
+        a = parseFloat(this.value);
+        document.getElementById("aValue").textContent = a.toFixed(2);
+        updateExpression();
+        drawGraph();
+        highlightOffLinePoints();
+        updateSelectedPointsBasedOnLine();
+      });
+
+      document.getElementById("bRange").addEventListener("input", function () {
+        b = parseFloat(this.value);
+        document.getElementById("bValue").textContent = b.toFixed(2);
+        updateExpression();
+        drawGraph();
+
+        // Atualiza a posição dos pontos selecionados se a reta for vertical
+        if (a === null) {
+          selectedPoints.forEach((point) => {
+            point.x = b; // Atualiza o x para o valor de b
+          });
+        }
+
+        highlightOffLinePoints();
+        updateSelectedPointsBasedOnLine();
+      });
+
+      document
+        .getElementById("createPointBtn")
+        .addEventListener("click", function () {
+          canvas.addEventListener("click", createPointOnClick);
+        });
+
+      function createPointOnClick(event) {
+        const { offsetX, offsetY } = event;
+        const scale = 50 * zoomLevel;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const x = (offsetX - centerX) / scale;
+        const y = (centerY - offsetY) / scale;
+
+        points.push({ x, y });
+        drawGraph();
+        updateTable();
+        canvas.removeEventListener("click", createPointOnClick);
+      }
+
+      function updateSelectedPointsBasedOnLine() {
+        const scale = 50 * zoomLevel;
+        selectedPoints.forEach((point) => {
+          const newY = a !== null ? a * point.x + b : null;
+          if (newY !== null) {
+            point.y = newY;
+          }
+        });
+        drawGraph();
+        updateTable();
+      }
+
+      drawGraph();
+    </script>
+  </body>
+</html>
