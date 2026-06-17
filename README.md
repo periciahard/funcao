@@ -1,22 +1,28 @@
 # Plano Cartesiano Interativo - V1
 
-Aplicativo HTML para estudo de função afim, reta no plano cartesiano e coeficiente angular.
+Aplicativo educacional em HTML, CSS e JavaScript para trabalhar plano cartesiano, pontos, função afim, coeficiente angular, coeficiente linear e tangente da reta.
 
-## Recursos
+## Recursos da V1
 
-- Criação de pontos no plano cartesiano.
-- Seleção de dois pontos com duplo clique.
-- Traçado da reta que passa pelos pontos selecionados.
-- Exibição da equação da reta com jogo de sinal correto.
-- Cálculo da tangente da reta: `tg(α) = Δy / Δx`.
-- Tabela de valores dos pontos.
+- Criação de pontos pelo gráfico ou por coordenadas.
+- Seleção de pontos com duplo clique.
+- Traçado da reta por dois pontos.
+- Correção automática do sinal na equação da reta.
+- Cálculo correto da tangente: tg(α) = Δy / Δx, usando P1 como o ponto mais à esquerda.
+- Desenho do triângulo da tangente no gráfico.
+- Coordenadas exibidas ao passar o cursor próximo à reta.
+- Explicações com botões de interrogação.
+- Explicação automática sobre reta crescente, decrescente ou constante.
+- Explicação automática sobre coeficiente linear positivo, negativo ou nulo.
+- Apagar apenas um ponto selecionado.
+- Apagar todos os dados somente mediante confirmação.
 - Salvamento automático no navegador.
-- Os dados só são apagados quando o usuário clicar em **Apagar Dados** e confirmar.
-- Exibição da versão do site na tela: **V1**.
+- Versão exibida na tela.
 
 ## Como publicar no GitHub Pages
 
-1. Envie o arquivo `index.html` para um repositório do GitHub.
-2. Vá em **Settings > Pages**.
-3. Em **Branch**, selecione `main` e a pasta `/root`.
-4. Clique em **Save**.
+1. Crie um repositório no GitHub.
+2. Envie o arquivo `index.html` para a raiz do repositório.
+3. Acesse **Settings > Pages**.
+4. Em **Branch**, selecione `main` e a pasta `/root`.
+5. Salve e aguarde o GitHub gerar o link.

@@ -172,6 +172,55 @@
         gap: 5px;
       }
 
+      .buttons .wide { grid-column: 1 / -1; }
+
+      .explanation-box {
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+        padding: 7px;
+        font-size: 0.86em;
+        line-height: 1.25;
+      }
+
+      .explanation-box h3 {
+        margin: 0 0 5px 0;
+        text-align: center;
+        font-size: 0.95em;
+      }
+
+      .explanation-box p {
+        margin: 4px 0;
+      }
+
+      .help-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 17px;
+        height: 17px;
+        padding: 0;
+        margin-left: 4px;
+        border-radius: 50%;
+        border: 1px solid #777;
+        background: #f4f4f4;
+        font-weight: bold;
+        font-size: 11px;
+        line-height: 1;
+      }
+
+      .help-panel {
+        display: none;
+        background: #fffbe8;
+        border: 1px solid #d8c56e;
+        border-radius: 7px;
+        padding: 7px;
+        font-size: 0.84em;
+        line-height: 1.3;
+      }
+
+      .help-panel.show { display: block; }
+
       button,
       input,
       select {
@@ -243,7 +292,7 @@
       <div class="left-panel">
         <div class="top-actions">
           <button id="createPointBtn">Criar ponto no gráfico</button>
-          <small>Dê dois cliques em um ponto para selecioná-lo.</small>
+          <small>Use os botões ? para ver as instruções.</small>
         </div>
         <div class="graph-container" id="graphContainer">
           <canvas id="graphCanvas" width="500" height="500"></canvas>
@@ -256,18 +305,37 @@
         <div class="additional-info" id="additionalInfo"></div>
 
         <div class="tangent-box" id="tangentBox">
-          <h3>Tangente da reta</h3>
+          <h3>
+            Tangente da reta
+            <button class="help-btn" type="button" data-help="tangentHelp">?</button>
+          </h3>
           <div id="tangentInfo">Selecione dois pontos e trace a reta.</div>
         </div>
 
+        <div class="explanation-box">
+          <h3>Leitura da reta</h3>
+          <p id="slopeExplanation">Trace uma reta para saber se ela é crescente ou decrescente.</p>
+          <p id="linearExplanation">Trace uma reta para identificar o coeficiente linear.</p>
+          <p>
+            Como usar
+            <button class="help-btn" type="button" data-help="usageHelp">?</button>
+            Coef. angular
+            <button class="help-btn" type="button" data-help="slopeHelp">?</button>
+            Coef. linear
+            <button class="help-btn" type="button" data-help="linearHelp">?</button>
+          </p>
+        </div>
+
+        <div class="help-panel" id="helpPanel"></div>
+
         <div id="sliders" class="sliders">
           <div class="slider-container">
-            <label for="aRange">Coef. a:</label>
+            <label for="aRange">Coef. a:<button class="help-btn" type="button" data-help="slopeHelp">?</button></label>
             <input type="range" id="aRange" min="-5" max="5" step="0.1" value="1" disabled />
             <span id="aValue">1</span>
           </div>
           <div class="slider-container">
-            <label for="bRange">Coef. b:</label>
+            <label for="bRange">Coef. b:<button class="help-btn" type="button" data-help="linearHelp">?</button></label>
             <input type="range" id="bRange" min="-5" max="5" step="0.1" value="0" disabled />
             <span id="bValue">0</span>
           </div>
@@ -301,7 +369,8 @@
 
         <div class="buttons">
           <button onclick="drawLineFromPoints()">Traçar reta</button>
-          <button onclick="clearPoints()">Apagar dados</button>
+          <button onclick="deleteSelectedPoint()">Apagar ponto selecionado</button>
+          <button class="wide" onclick="clearPoints()">Apagar todos os dados</button>
         </div>
       </div>
 
@@ -431,6 +500,16 @@
         };
       }
 
+      function getOrderedSelectedPoints() {
+        if (selectedPoints.length !== 2) return null;
+        const pA = selectedPoints[0];
+        const pB = selectedPoints[1];
+        if (Math.abs(pA.x - pB.x) < 0.000001) {
+          return pA.y <= pB.y ? [pA, pB] : [pB, pA];
+        }
+        return pA.x <= pB.x ? [pA, pB] : [pB, pA];
+      }
+
       function updateTangentInfo() {
         const tangentInfo = document.getElementById("tangentInfo");
         if (!lineDrawn || selectedPoints.length !== 2) {
@@ -438,27 +517,77 @@
           return;
         }
 
-        const p1 = selectedPoints[0];
-        const p2 = selectedPoints[1];
+        const ordered = getOrderedSelectedPoints();
+        const p1 = ordered[0];
+        const p2 = ordered[1];
         const deltaX = p2.x - p1.x;
         const deltaY = p2.y - p1.y;
 
         if (Math.abs(deltaX) < 0.000001) {
           tangentInfo.innerHTML = `
-            <div>A reta é vertical.</div>
-            <div>Δx = 0. A tangente não está definida.</div>
+            <div>Δx = x₂ - x₁ = 0</div>
+            <div>A reta é vertical. A tangente não está definida.</div>
           `;
           return;
         }
 
         const tangent = deltaY / deltaX;
         tangentInfo.innerHTML = `
+          <div>Tomando P₁ como o ponto mais à esquerda:</div>
           <div>Δy = y₂ - y₁ = ${formatNumber(deltaY)}</div>
           <div>Δx = x₂ - x₁ = ${formatNumber(deltaX)}</div>
           <div class="tangent-line">tg(α) = Δy / Δx = ${formatNumber(deltaY)} / ${formatNumber(deltaX)} = ${formatNumber(tangent)}</div>
           <div>Coeficiente angular: a = ${formatNumber(tangent)}</div>
         `;
       }
+
+      function updateExplanations() {
+        const slopeExplanation = document.getElementById("slopeExplanation");
+        const linearExplanation = document.getElementById("linearExplanation");
+
+        if (!lineDrawn || a === null) {
+          slopeExplanation.textContent = a === null
+            ? "A reta é vertical: ela não é função do tipo y = ax + b."
+            : "Trace uma reta para saber se ela é crescente ou decrescente.";
+          linearExplanation.textContent = a === null
+            ? "Nesse caso não há coeficiente linear b da função y = ax + b."
+            : "Trace uma reta para identificar o coeficiente linear.";
+          return;
+        }
+
+        if (a > 0) {
+          slopeExplanation.textContent = `A reta é crescente porque a = ${formatNumber(a)} é positivo: quando x aumenta, y também aumenta.`;
+        } else if (a < 0) {
+          slopeExplanation.textContent = `A reta é decrescente porque a = ${formatNumber(a)} é negativo: quando x aumenta, y diminui.`;
+        } else {
+          slopeExplanation.textContent = "A reta é constante porque a = 0: quando x aumenta, y permanece igual.";
+        }
+
+        if (b > 0) {
+          linearExplanation.textContent = `O coeficiente linear b = ${formatNumber(b)} é positivo: a reta corta o eixo y acima da origem, no ponto (0, ${formatNumber(b)}).`;
+        } else if (b < 0) {
+          linearExplanation.textContent = `O coeficiente linear b = ${formatNumber(b)} é negativo: a reta corta o eixo y abaixo da origem, no ponto (0, ${formatNumber(b)}).`;
+        } else {
+          linearExplanation.textContent = "O coeficiente linear b = 0: a reta passa pela origem, no ponto (0, 0).";
+        }
+      }
+
+      const HELP_TEXTS = {
+        usageHelp: "Para selecionar um ponto, dê dois cliques sobre ele. Se quiser apagar apenas um ponto, deixe somente esse ponto selecionado e clique em ‘Apagar ponto selecionado’. Para criar ponto pelo gráfico, clique em ‘Criar ponto no gráfico’ e depois clique no local desejado.",
+        slopeHelp: "O coeficiente angular a indica a inclinação da reta. Se a > 0, a reta é crescente. Se a < 0, a reta é decrescente. Se a = 0, a reta é horizontal/constante.",
+        linearHelp: "O coeficiente linear b indica onde a reta corta o eixo y. Se b é negativo, o corte ocorre abaixo da origem; se b é positivo, ocorre acima da origem.",
+        tangentHelp: "A tangente do ângulo da reta é calculada por tg(α) = Δy / Δx. O programa toma como P₁ o ponto mais à esquerda, evitando troca de sinal por ordem de seleção."
+      };
+
+      document.querySelectorAll(".help-btn").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const key = button.dataset.help;
+          const panel = document.getElementById("helpPanel");
+          panel.textContent = HELP_TEXTS[key] || "Ajuda não disponível.";
+          panel.classList.toggle("show", true);
+        });
+      });
 
       function handleMouseDown(e) {
         const pos = getEventCanvasPosition(e);
@@ -544,12 +673,15 @@
           const screen = graphToCanvas(linePoint);
           distancePx = Math.abs(pos.offsetX - screen.x);
         } else {
-          linePoint = { x: graphPoint.x, y: a * graphPoint.x + b };
+          // Projeção ortogonal do cursor sobre a reta y = ax + b.
+          const projectedX = (graphPoint.x + a * (graphPoint.y - b)) / (1 + a * a);
+          const projectedY = a * projectedX + b;
+          linePoint = { x: projectedX, y: projectedY };
           const screen = graphToCanvas(linePoint);
-          distancePx = Math.abs(pos.offsetY - screen.y);
+          distancePx = Math.hypot(pos.offsetX - screen.x, pos.offsetY - screen.y);
         }
 
-        if (distancePx <= 10) {
+        if (distancePx <= 12) {
           cursorTooltip.style.left = `${pos.cssX}px`;
           cursorTooltip.style.top = `${pos.cssY}px`;
           cursorTooltip.textContent = `(${formatNumber(linePoint.x)}, ${formatNumber(linePoint.y)})`;
@@ -675,8 +807,10 @@
       function drawTangentTriangle() {
         if (!lineDrawn || selectedPoints.length !== 2 || a === null) return;
 
-        const p1 = selectedPoints[0];
-        const p2 = selectedPoints[1];
+        const ordered = getOrderedSelectedPoints();
+        if (!ordered) return;
+        const p1 = ordered[0];
+        const p2 = ordered[1];
         const deltaX = p2.x - p1.x;
         const deltaY = p2.y - p1.y;
         if (Math.abs(deltaX) < 0.000001 || Math.abs(deltaY) < 0.000001) return;
@@ -799,6 +933,28 @@
         }
       }
 
+
+      function deleteSelectedPoint() {
+        if (selectedPoints.length === 0) {
+          alert("Selecione um ponto com dois cliques antes de apagar.");
+          return;
+        }
+
+        if (selectedPoints.length > 1) {
+          alert("Para apagar apenas um ponto, deixe somente um ponto selecionado. Dê dois cliques em um dos pontos para desmarcá-lo.");
+          return;
+        }
+
+        const pointToDelete = selectedPoints[0];
+        points = points.filter((point) => point !== pointToDelete);
+        selectedPoints = [];
+        lineDrawn = false;
+        a = 1;
+        b = 0;
+        refreshAll();
+        saveState();
+      }
+
       function clearPoints() {
         const confirmar = confirm("Tem certeza que deseja apagar os pontos e os dados salvos?");
         if (!confirmar) return;
@@ -852,6 +1008,7 @@
         updateExpression();
         updateTable();
         updateTangentInfo();
+        updateExplanations();
         drawGraph();
       }
 
