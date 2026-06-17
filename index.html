@@ -34,7 +34,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        flex: 1 1 620px;
+        flex: 1 1 560px;
         min-width: 0;
       }
 
@@ -50,8 +50,8 @@
       }
 
       .brand-logo {
-        height: 56px;
-        max-width: 360px;
+        height: 44px;
+        max-width: 300px;
         object-fit: contain;
       }
 
@@ -67,7 +67,7 @@
 
       .graph-container {
         position: relative;
-        width: min(68vw, 620px);
+        width: min(60vw, 560px);
         aspect-ratio: 1 / 1;
         background-color: #ffffff;
         border: 2px solid #000;
@@ -472,6 +472,22 @@
       let panY = 0;
       let suppressNextClick = false;
 
+      if (!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+          const radius = Math.min(r, w / 2, h / 2);
+          this.moveTo(x + radius, y);
+          this.lineTo(x + w - radius, y);
+          this.quadraticCurveTo(x + w, y, x + w, y + radius);
+          this.lineTo(x + w, y + h - radius);
+          this.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+          this.lineTo(x + radius, y + h);
+          this.quadraticCurveTo(x, y + h, x, y + h - radius);
+          this.lineTo(x, y + radius);
+          this.quadraticCurveTo(x, y, x + radius, y);
+          return this;
+        };
+      }
+
       const canvas = document.getElementById("graphCanvas");
       const ctx = canvas.getContext("2d");
       const graphContainer = document.getElementById("graphContainer");
@@ -852,18 +868,42 @@
       }
 
       function drawPoints(scale) {
-        points.forEach((point) => {
+        points.forEach((point, index) => {
           const screen = graphToCanvas(point);
-          ctx.beginPath();
-          ctx.arc(screen.x, screen.y, 5, 0, Math.PI * 2);
-          ctx.fillStyle = selectedPoints.includes(point) ? "orange" : "blue";
-          ctx.fill();
+          const selected = selectedPoints.includes(point);
 
-          if (selectedPoints.includes(point)) {
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-          }
+          ctx.beginPath();
+          ctx.arc(screen.x, screen.y, 5.5, 0, Math.PI * 2);
+          ctx.fillStyle = selected ? "orange" : "#1f78ff";
+          ctx.fill();
+          ctx.strokeStyle = "black";
+          ctx.lineWidth = selected ? 2 : 1;
+          ctx.stroke();
+
+          const label = `(${formatNumber(point.x)}, ${formatNumber(point.y)})`;
+          ctx.save();
+          ctx.font = "12px Arial";
+          const metrics = ctx.measureText(label);
+          const paddingX = 5;
+          const boxW = metrics.width + paddingX * 2;
+          const boxH = 18;
+          let boxX = screen.x + 10;
+          let boxY = screen.y - 24;
+
+          if (boxX + boxW > canvas.width - 4) boxX = screen.x - boxW - 10;
+          if (boxY < 4) boxY = screen.y + 12;
+          if (boxY + boxH > canvas.height - 4) boxY = screen.y - 24;
+
+          ctx.fillStyle = "rgba(255,255,255,0.92)";
+          ctx.strokeStyle = "#cfcfcf";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#111";
+          ctx.fillText(label, boxX + paddingX, boxY + 13);
+          ctx.restore();
         });
       }
 
@@ -1191,15 +1231,25 @@
         return exportCanvas.toDataURL("image/jpeg", 1.0);
       }
 
-      function getPdfInfoLines() {
+      function getPdfReportData() {
         const now = new Date().toLocaleString("pt-BR");
         const equation = document.getElementById("expression").textContent;
         const slopeText = document.getElementById("slopeExplanation").textContent;
         const linearText = document.getElementById("linearExplanation").textContent;
-        const linhas = [
-          `Equacao da reta: ${equation}`,
-          `Exportado em: ${now}`,
-        ];
+
+        const report = {
+          title: "Plano Cartesiano Interativo",
+          subtitle: `Atelier Function - Versao ${APP_VERSION}`,
+          exportedAt: now,
+          equation,
+          slope: Number.isFinite(a) ? a : null,
+          intercept: Number.isFinite(b) ? b : null,
+          slopeText,
+          linearText,
+          tangentText: "Tangente: selecione dois pontos e trace a reta para calcular.",
+          angleText: "Angulo alfa: nao calculado.",
+          points: points.map((p, i) => ({ label: `P${i + 1}`, x: p.x, y: p.y })),
+        };
 
         if (lineDrawn && selectedPoints.length === 2) {
           const ordered = getOrderedSelectedPoints();
@@ -1208,62 +1258,118 @@
           const dx = p2.x - p1.x;
           const dy = p2.y - p1.y;
           if (Math.abs(dx) < 0.000001) {
-            linhas.push("Tangente: reta vertical; Delta x = 0; tangente nao definida.");
+            report.tangentText = "Tangente: reta vertical; Delta x = 0; tangente nao definida.";
+            report.angleText = "Angulo alfa: 90 graus.";
           } else {
-            linhas.push(`Tangente: Delta y = ${formatNumber(dy)}; Delta x = ${formatNumber(dx)}; tg(alfa) = ${formatNumber(dy / dx)}.`);
+            const tangent = dy / dx;
+            const angle = Math.atan(tangent) * 180 / Math.PI;
+            report.tangentText = `Tangente: Delta y = ${formatNumber(dy)}; Delta x = ${formatNumber(dx)}; tg(alfa) = ${formatNumber(tangent)}.`;
+            report.angleText = `Angulo alfa aproximado: ${formatNumber(angle)} graus.`;
           }
-        } else {
-          linhas.push("Tangente: selecione dois pontos e trace a reta para calcular.");
         }
-
-        linhas.push(`Leitura: ${slopeText}`);
-        linhas.push(`Coeficiente linear: ${linearText}`);
 
         if (points.length) {
-          linhas.push("Pontos registrados:");
-          points.forEach((p, i) => linhas.push(`P${i + 1}: x = ${formatNumber(p.x)}; y = ${formatNumber(p.y)}`));
+          const xs = points.map((p) => p.x);
+          const ys = points.map((p) => p.y);
+          report.domainText = `Dominio dos pontos: x entre ${formatNumber(Math.min(...xs))} e ${formatNumber(Math.max(...xs))}.`;
+          report.rangeText = `Imagem dos pontos: y entre ${formatNumber(Math.min(...ys))} e ${formatNumber(Math.max(...ys))}.`;
         } else {
-          linhas.push("Pontos registrados: nenhum ponto informado.");
+          report.domainText = "Dominio dos pontos: nenhum ponto registrado.";
+          report.rangeText = "Imagem dos pontos: nenhum ponto registrado.";
         }
-        return linhas;
+        return report;
       }
 
-      function buildSimplePdf({ graphDataUrl, lines }) {
+      function buildSimplePdf({ graphDataUrl, report }) {
         const imgBytes = dataURLToBinary(graphDataUrl);
         const pageW = 595.28;
         const pageH = 841.89;
-        const imgW = 475;
-        const imgH = 475;
-        const imgX = 60;
-        const imgY = 300;
+        const imgW = 360;
+        const imgH = 360;
+        const imgX = 117;
+        const imgY = 405;
 
-        const textOps = [];
-        const addText = (text, x, y, size = 10) => {
-          textOps.push(`BT /F1 ${size} Tf ${x} ${y} Td (${escapePdfText(text)}) Tj ET`);
+        const ops = [];
+        const addText = (text, x, y, size = 10, font = "F1") => {
+          ops.push(`BT /${font} ${size} Tf ${x} ${y} Td (${escapePdfText(text)}) Tj ET`);
+        };
+        const addLine = (x1, y1, x2, y2) => {
+          ops.push(`${x1} ${y1} m ${x2} ${y2} l S`);
+        };
+        const addRect = (x, y, w, h) => {
+          ops.push(`${x} ${y} ${w} ${h} re S`);
         };
 
-        addText("Plano Cartesiano Interativo", 50, 812, 18);
-        addText(`Atelier Function - Versao ${APP_VERSION}`, 50, 792, 11);
-        addText("Grafico", 50, 775, 11);
+        addText(report.title, 45, 812, 18, "F2");
+        addText(report.subtitle, 45, 792, 11);
+        addText(`Equacao da reta: ${report.equation}`, 45, 774, 12, "F2");
+        addText(`Exportado em: ${report.exportedAt}`, 45, 758, 9);
+        addLine(45, 748, 550, 748);
 
-        let y = 275;
-        lines.forEach((line, index) => {
-          const max = index <= 1 ? 88 : 96;
-          splitPdfLine(line, max).forEach((part) => {
-            if (y < 45) return;
-            addText(part, 50, y, index === 0 ? 12 : 9.5);
-            y -= index === 0 ? 16 : 12;
+        addText("Grafico", 45, 730, 11, "F2");
+        ops.push(`q\n${imgW} 0 0 ${imgH} ${imgX} ${imgY} cm\n/Im1 Do\nQ`);
+
+        let y = 380;
+        addText("Analise matematica", 45, y, 12, "F2");
+        y -= 17;
+        const mainLines = [
+          report.tangentText,
+          report.angleText,
+          Number.isFinite(report.slope) ? `Coeficiente angular (a): ${formatNumber(report.slope)}.` : "Coeficiente angular (a): nao definido para reta vertical.",
+          Number.isFinite(report.intercept) ? `Coeficiente linear (b): ${formatNumber(report.intercept)}.` : "Coeficiente linear (b): nao definido para reta vertical.",
+          report.domainText,
+          report.rangeText,
+          `Leitura da reta: ${report.slopeText}`,
+          report.linearText,
+        ];
+        mainLines.forEach((line) => {
+          splitPdfLine(line, 92).forEach((part) => {
+            if (y > 205) {
+              addText(part, 45, y, 8.7);
+              y -= 11;
+            }
           });
-          y -= 2;
+          y -= 1;
         });
 
-        const content = `q\n${imgW} 0 0 ${imgH} ${imgX} ${imgY} cm\n/Im1 Do\nQ\n` + textOps.join("\n");
+        const tableTop = Math.min(y - 8, 205);
+        addText("Coordenadas dos pontos criados", 45, tableTop, 12, "F2");
+        const startY = tableTop - 18;
+        const x0 = 45;
+        const colW = [80, 130, 130];
+        const rowH = 16;
+        addRect(x0, startY, colW[0] + colW[1] + colW[2], rowH);
+        addLine(x0 + colW[0], startY, x0 + colW[0], startY + rowH);
+        addLine(x0 + colW[0] + colW[1], startY, x0 + colW[0] + colW[1], startY + rowH);
+        addText("Ponto", x0 + 10, startY + 5, 9, "F2");
+        addText("x", x0 + colW[0] + 55, startY + 5, 9, "F2");
+        addText("y", x0 + colW[0] + colW[1] + 55, startY + 5, 9, "F2");
+
+        const maxRows = Math.min(report.points.length, 8);
+        for (let i = 0; i < maxRows; i++) {
+          const p = report.points[i];
+          const ry = startY - rowH * (i + 1);
+          addRect(x0, ry, colW[0] + colW[1] + colW[2], rowH);
+          addLine(x0 + colW[0], ry, x0 + colW[0], ry + rowH);
+          addLine(x0 + colW[0] + colW[1], ry, x0 + colW[0] + colW[1], ry + rowH);
+          addText(p.label, x0 + 12, ry + 5, 8.7);
+          addText(formatNumber(p.x), x0 + colW[0] + 45, ry + 5, 8.7);
+          addText(formatNumber(p.y), x0 + colW[0] + colW[1] + 45, ry + 5, 8.7);
+        }
+        if (report.points.length > maxRows) {
+          addText(`Mais ${report.points.length - maxRows} ponto(s) registrados na tela.`, x0, startY - rowH * (maxRows + 1) - 12, 8.5);
+        }
+
+        addLine(45, 34, 550, 34);
+        addText(`Documento gerado pelo Atelier Function ${APP_VERSION}`, 45, 20, 8.5);
+
+        const content = ops.join("\n");
         const enc = new TextEncoder();
         const contentBytes = enc.encode(content);
         const pdfObjects = [
           enc.encode(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n`),
           enc.encode(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`),
-          enc.encode(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im1 4 0 R >> /Font << /F1 5 0 R >> >> /Contents 6 0 R >>\nendobj\n`),
+          enc.encode(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im1 4 0 R >> /Font << /F1 5 0 R /F2 7 0 R >> >> /Contents 6 0 R >>\nendobj\n`),
           concatParts([
             enc.encode(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>\nstream\n`),
             imgBytes,
@@ -1275,6 +1381,7 @@
             contentBytes,
             enc.encode(`\nendstream\nendobj\n`),
           ]),
+          enc.encode(`7 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n`),
         ];
 
         const header = enc.encode("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
@@ -1287,9 +1394,9 @@
           offset += obj.length;
         });
         const xrefStart = offset;
-        let xref = `xref\n0 7\n0000000000 65535 f \n`;
-        for (let i = 1; i <= 6; i++) xref += `${String(offsets[i]).padStart(10, "0")} 00000 n \n`;
-        xref += `trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+        let xref = `xref\n0 8\n0000000000 65535 f \n`;
+        for (let i = 1; i <= 7; i++) xref += `${String(offsets[i]).padStart(10, "0")} 00000 n \n`;
+        xref += `trailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
         chunks.push(enc.encode(xref));
         return new Blob(chunks, { type: "application/pdf" });
       }
@@ -1298,7 +1405,7 @@
         const graphDataUrl = makeGraphDataUrlForPdf();
         const pdf = buildSimplePdf({
           graphDataUrl,
-          lines: getPdfInfoLines(),
+          report: getPdfReportData(),
         });
 
         const url = URL.createObjectURL(pdf);
