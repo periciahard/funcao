@@ -1,16 +1,15 @@
-# Plano Cartesiano Interativo — Atelier Function V1
+# Plano Cartesiano Interativo — Atelier Function V1.2
 
-Versão corrigida com:
+Versão para GitHub Pages.
 
-- cursor seta no estado normal e mão fechada apenas durante o arraste;
-- logo Atelier Function no topo;
-- versão V1 visível;
-- exportação direta em PDF;
-- apagar ponto individual selecionado;
-- tooltips ao passar o mouse;
-- tangente calculada por Δy/Δx usando o ponto mais à esquerda como P1;
-- interface reorganizada com gráfico maior e controles agrupados.
-
-## Como usar
-
-Abra o arquivo `index.html` no navegador ou publique a pasta no GitHub Pages.
+Ajustes desta versão:
+- Layout usando toda a tela do usuário em desktop.
+- Gráfico maior e responsivo.
+- Cabeçalho com logo Atelier Function visível na tela.
+- Logo Atelier Function também no PDF.
+- PDF em formato paisagem, com gráfico, análise matemática e tabela de pontos.
+- Coordenadas dos pontos no gráfico com identificação P1, P2, P3...
+- Reposicionamento automático das etiquetas para reduzir sobreposição.
+- Tabela lateral com Ponto, x e y.
+- Destaque visual do ponto selecionado.
+- Textos “domínio/imagem dos pontos” ajustados para “intervalo dos valores cadastrados”.

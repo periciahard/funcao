@@ -9,24 +9,21 @@
 
       body {
         font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         min-height: 100vh;
         margin: 0;
         background: #eeeeee;
+        overflow: hidden;
       }
 
       .container {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         background-color: #f5f5f5;
-        padding: 10px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.18);
-        width: 96vw;
-        max-width: 1120px;
-        min-height: 86vh;
+        padding: 12px;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100vw;
+        height: 100vh;
         position: relative;
       }
 
@@ -34,25 +31,29 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        flex: 1 1 560px;
+        flex: 1 1 auto;
         min-width: 0;
+        height: 100%;
       }
 
       .brand-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        gap: 12px;
         background: #ffffff;
         border: 1px solid #d0d0d0;
-        border-radius: 8px;
-        padding: 8px 10px;
+        border-radius: 10px;
+        padding: 10px 16px;
+        min-height: 70px;
       }
 
       .brand-logo {
-        height: 44px;
-        max-width: 300px;
+        height: 40px;
+        width: 230px;
         object-fit: contain;
+        object-position: left center;
+        display: block;
       }
 
       .brand-version {
@@ -67,8 +68,9 @@
 
       .graph-container {
         position: relative;
-        width: min(60vw, 560px);
-        aspect-ratio: 1 / 1;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 420px;
         background-color: #ffffff;
         border: 2px solid #000;
         overflow: hidden;
@@ -104,19 +106,23 @@
       .controls {
         display: flex;
         flex-direction: column;
-        gap: 7px;
-        width: 310px;
-        flex: 0 0 310px;
+        gap: 8px;
+        width: 340px;
+        flex: 0 0 340px;
         font-size: 13px;
+        height: 100%;
+        overflow: auto;
+        padding-right: 2px;
       }
 
       .expression {
-        font-size: 1.05em;
+        font-size: 1.25em;
         font-weight: bold;
         text-align: center;
         background: #fff;
         border-radius: 8px;
-        padding: 7px;
+        padding: 10px;
+        color: #d90000;
       }
 
       .additional-info {
@@ -343,9 +349,13 @@
           min-height: 100vh;
           border-radius: 0;
         }
+        body { overflow: auto; }
         .graph-container {
           width: 100%;
           max-width: none;
+          height: 68vh;
+          min-height: 360px;
+          flex: 0 0 auto;
         }
         .controls {
           width: 100%;
@@ -430,7 +440,7 @@
           <h3>Tabela de Valores</h3>
           <table>
             <thead>
-              <tr><th>x</th><th>y</th></tr>
+              <tr><th>Ponto</th><th>x</th><th>y</th></tr>
             </thead>
             <tbody id="valueTable"></tbody>
           </table>
@@ -867,42 +877,90 @@
         }
       }
 
+      function resizeCanvasToContainer() {
+        const rect = graphContainer.getBoundingClientRect();
+        const w = Math.max(320, Math.floor(rect.width));
+        const h = Math.max(320, Math.floor(rect.height));
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+      }
+
+      function rectsOverlap(a, b) {
+        return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+      }
+
       function drawPoints(scale) {
+        const occupiedLabels = [];
         points.forEach((point, index) => {
           const screen = graphToCanvas(point);
           const selected = selectedPoints.includes(point);
 
+          if (selected) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(screen.x, screen.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(31, 120, 255, 0.20)";
+            ctx.fill();
+            ctx.restore();
+          }
+
           ctx.beginPath();
-          ctx.arc(screen.x, screen.y, 5.5, 0, Math.PI * 2);
+          ctx.arc(screen.x, screen.y, 5.8, 0, Math.PI * 2);
           ctx.fillStyle = selected ? "orange" : "#1f78ff";
           ctx.fill();
-          ctx.strokeStyle = "black";
-          ctx.lineWidth = selected ? 2 : 1;
+          ctx.strokeStyle = selected ? "#0058ff" : "black";
+          ctx.lineWidth = selected ? 2.5 : 1;
           ctx.stroke();
 
-          const label = `(${formatNumber(point.x)}, ${formatNumber(point.y)})`;
+          const label = `P${index + 1} (${formatNumber(point.x)}, ${formatNumber(point.y)})`;
           ctx.save();
-          ctx.font = "12px Arial";
+          ctx.font = selected ? "bold 12px Arial" : "12px Arial";
           const metrics = ctx.measureText(label);
-          const paddingX = 5;
+          const paddingX = 6;
           const boxW = metrics.width + paddingX * 2;
-          const boxH = 18;
-          let boxX = screen.x + 10;
-          let boxY = screen.y - 24;
+          const boxH = 20;
+          const candidateOffsets = [
+            { dx: 12, dy: -28 },
+            { dx: 12, dy: 12 },
+            { dx: -boxW - 12, dy: -28 },
+            { dx: -boxW - 12, dy: 12 },
+            { dx: -boxW / 2, dy: -44 },
+            { dx: -boxW / 2, dy: 20 },
+          ];
+          let chosen = null;
+          for (const off of candidateOffsets) {
+            const rect = {
+              x: Math.min(Math.max(screen.x + off.dx, 4), canvas.width - boxW - 4),
+              y: Math.min(Math.max(screen.y + off.dy, 4), canvas.height - boxH - 4),
+              w: boxW,
+              h: boxH,
+            };
+            if (!occupiedLabels.some((other) => rectsOverlap(rect, other))) {
+              chosen = rect;
+              break;
+            }
+          }
+          if (!chosen) {
+            chosen = {
+              x: Math.min(Math.max(screen.x + 12, 4), canvas.width - boxW - 4),
+              y: Math.min(Math.max(screen.y + 12 + index * 8, 4), canvas.height - boxH - 4),
+              w: boxW,
+              h: boxH,
+            };
+          }
+          occupiedLabels.push(chosen);
 
-          if (boxX + boxW > canvas.width - 4) boxX = screen.x - boxW - 10;
-          if (boxY < 4) boxY = screen.y + 12;
-          if (boxY + boxH > canvas.height - 4) boxY = screen.y - 24;
-
-          ctx.fillStyle = "rgba(255,255,255,0.92)";
-          ctx.strokeStyle = "#cfcfcf";
-          ctx.lineWidth = 1;
+          ctx.fillStyle = selected ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.92)";
+          ctx.strokeStyle = selected ? "#0058ff" : "#cfcfcf";
+          ctx.lineWidth = selected ? 1.5 : 1;
           ctx.beginPath();
-          ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+          ctx.roundRect(chosen.x, chosen.y, boxW, boxH, 5);
           ctx.fill();
           ctx.stroke();
           ctx.fillStyle = "#111";
-          ctx.fillText(label, boxX + paddingX, boxY + 13);
+          ctx.fillText(label, chosen.x + paddingX, chosen.y + 14);
           ctx.restore();
         });
       }
@@ -930,6 +988,7 @@
       }
 
       function drawGraph() {
+        resizeCanvasToContainer();
         const scale = 50 * zoomLevel;
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1055,12 +1114,15 @@
       function updateTable() {
         const tableBody = document.getElementById("valueTable");
         tableBody.innerHTML = "";
-        points.forEach((point) => {
+        points.forEach((point, index) => {
           const row = document.createElement("tr");
+          const pCell = document.createElement("td");
           const xCell = document.createElement("td");
           const yCell = document.createElement("td");
+          pCell.textContent = `P${index + 1}`;
           xCell.textContent = point.x.toFixed(2);
           yCell.textContent = point.y.toFixed(2);
+          row.appendChild(pCell);
           row.appendChild(xCell);
           row.appendChild(yCell);
           tableBody.appendChild(row);
@@ -1271,23 +1333,23 @@
         if (points.length) {
           const xs = points.map((p) => p.x);
           const ys = points.map((p) => p.y);
-          report.domainText = `Dominio dos pontos: x entre ${formatNumber(Math.min(...xs))} e ${formatNumber(Math.max(...xs))}.`;
-          report.rangeText = `Imagem dos pontos: y entre ${formatNumber(Math.min(...ys))} e ${formatNumber(Math.max(...ys))}.`;
+          report.domainText = `Intervalo dos valores de x cadastrados: ${formatNumber(Math.min(...xs))} a ${formatNumber(Math.max(...xs))}.`;
+          report.rangeText = `Intervalo dos valores de y cadastrados: ${formatNumber(Math.min(...ys))} a ${formatNumber(Math.max(...ys))}.`;
         } else {
-          report.domainText = "Dominio dos pontos: nenhum ponto registrado.";
-          report.rangeText = "Imagem dos pontos: nenhum ponto registrado.";
+          report.domainText = "Intervalo dos valores de x cadastrados: nenhum ponto registrado.";
+          report.rangeText = "Intervalo dos valores de y cadastrados: nenhum ponto registrado.";
         }
         return report;
       }
 
       function buildSimplePdf({ graphDataUrl, report }) {
         const imgBytes = dataURLToBinary(graphDataUrl);
-        const pageW = 595.28;
-        const pageH = 841.89;
-        const imgW = 360;
-        const imgH = 360;
-        const imgX = 117;
-        const imgY = 405;
+        const pageW = 841.89;
+        const pageH = 595.28;
+        const imgW = 385;
+        const imgH = 385;
+        const imgX = 34;
+        const imgY = 92;
 
         const ops = [];
         const addText = (text, x, y, size = 10, font = "F1") => {
@@ -1299,19 +1361,36 @@
         const addRect = (x, y, w, h) => {
           ops.push(`${x} ${y} ${w} ${h} re S`);
         };
+        const addLogo = (x, y, scale = 0.72) => {
+          ops.push(`0 0 0 rg`);
+          addText("Atelier", x, y, 20 * scale, "F2");
+          ops.push(`0.69 0.09 0.31 rg`);
+          addText("Function", x, y - 20 * scale, 21 * scale, "F2");
+          ops.push(`0 0 0 RG 2 w`);
+          const cx = x + 96 * scale;
+          const cy = y - 10 * scale;
+          ops.push(`${cx} ${cy} m ${cx + 28 * scale} ${cy + 52 * scale} ${cx + 70 * scale} ${cy + 52 * scale} ${cx + 98 * scale} ${cy} c S`);
+          ops.push(`0.69 0.09 0.31 rg`);
+          [[0,0],[98,0],[150,0]].forEach(([dx,dy]) => {
+            ops.push(`${cx + dx * scale - 2.5} ${cy + dy * scale - 2.5} 5 5 re f`);
+          });
+          ops.push(`0 0 0 rg 0 0 0 RG 1 w`);
+        };
 
-        addText(report.title, 45, 812, 18, "F2");
-        addText(report.subtitle, 45, 792, 11);
-        addText(`Equacao da reta: ${report.equation}`, 45, 774, 12, "F2");
-        addText(`Exportado em: ${report.exportedAt}`, 45, 758, 9);
-        addLine(45, 748, 550, 748);
+        addLogo(42, 553, 0.72);
+        addText("Plano Cartesiano Interativo", 240, 552, 18, "F2");
+        addText(`Versao ${APP_VERSION}`, 240, 532, 10, "F2");
+        addText(`Exportado em: ${report.exportedAt}`, 650, 532, 9);
+        addLine(34, 515, 808, 515);
 
-        addText("Grafico", 45, 730, 11, "F2");
+        addText(`Equacao da reta: ${report.equation}`, 34, 493, 12, "F2");
+        addText("Grafico", imgX, imgY + imgH + 12, 11, "F2");
         ops.push(`q\n${imgW} 0 0 ${imgH} ${imgX} ${imgY} cm\n/Im1 Do\nQ`);
 
-        let y = 380;
-        addText("Analise matematica", 45, y, 12, "F2");
-        y -= 17;
+        let xInfo = 448;
+        let y = 492;
+        addText("Analise matematica", xInfo, y, 13, "F2");
+        y -= 20;
         const mainLines = [
           report.tangentText,
           report.angleText,
@@ -1323,27 +1402,26 @@
           report.linearText,
         ];
         mainLines.forEach((line) => {
-          splitPdfLine(line, 92).forEach((part) => {
-            if (y > 205) {
-              addText(part, 45, y, 8.7);
-              y -= 11;
+          splitPdfLine(line, 58).forEach((part) => {
+            if (y > 245) {
+              addText(part, xInfo, y, 9.2);
+              y -= 12;
             }
           });
-          y -= 1;
+          y -= 2;
         });
 
-        const tableTop = Math.min(y - 8, 205);
-        addText("Coordenadas dos pontos criados", 45, tableTop, 12, "F2");
-        const startY = tableTop - 18;
-        const x0 = 45;
-        const colW = [80, 130, 130];
-        const rowH = 16;
+        addText("Coordenadas dos pontos criados", xInfo, 212, 13, "F2");
+        const startY = 190;
+        const x0 = xInfo;
+        const colW = [72, 130, 130];
+        const rowH = 17;
         addRect(x0, startY, colW[0] + colW[1] + colW[2], rowH);
         addLine(x0 + colW[0], startY, x0 + colW[0], startY + rowH);
         addLine(x0 + colW[0] + colW[1], startY, x0 + colW[0] + colW[1], startY + rowH);
         addText("Ponto", x0 + 10, startY + 5, 9, "F2");
-        addText("x", x0 + colW[0] + 55, startY + 5, 9, "F2");
-        addText("y", x0 + colW[0] + colW[1] + 55, startY + 5, 9, "F2");
+        addText("x", x0 + colW[0] + 58, startY + 5, 9, "F2");
+        addText("y", x0 + colW[0] + colW[1] + 58, startY + 5, 9, "F2");
 
         const maxRows = Math.min(report.points.length, 8);
         for (let i = 0; i < maxRows; i++) {
@@ -1352,16 +1430,17 @@
           addRect(x0, ry, colW[0] + colW[1] + colW[2], rowH);
           addLine(x0 + colW[0], ry, x0 + colW[0], ry + rowH);
           addLine(x0 + colW[0] + colW[1], ry, x0 + colW[0] + colW[1], ry + rowH);
-          addText(p.label, x0 + 12, ry + 5, 8.7);
-          addText(formatNumber(p.x), x0 + colW[0] + 45, ry + 5, 8.7);
-          addText(formatNumber(p.y), x0 + colW[0] + colW[1] + 45, ry + 5, 8.7);
+          addText(p.label, x0 + 12, ry + 5, 8.8);
+          addText(formatNumber(p.x), x0 + colW[0] + 48, ry + 5, 8.8);
+          addText(formatNumber(p.y), x0 + colW[0] + colW[1] + 48, ry + 5, 8.8);
         }
         if (report.points.length > maxRows) {
           addText(`Mais ${report.points.length - maxRows} ponto(s) registrados na tela.`, x0, startY - rowH * (maxRows + 1) - 12, 8.5);
         }
 
-        addLine(45, 34, 550, 34);
-        addText(`Documento gerado pelo Atelier Function ${APP_VERSION}`, 45, 20, 8.5);
+        addLine(34, 38, 808, 38);
+        addText(`Documento gerado pelo Atelier Function ${APP_VERSION}`, 34, 22, 8.8);
+        addText("Plano Cartesiano Interativo", 660, 22, 8.8);
 
         const content = ops.join("\n");
         const enc = new TextEncoder();
