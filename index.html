@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plano Cartesiano Interativo • V1</title>
+    <title>Plano Cartesiano Interativo • V1.3</title>
     <style>
       * { box-sizing: border-box; }
 
@@ -40,20 +40,23 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: 16px;
         background: #ffffff;
         border: 1px solid #d0d0d0;
         border-radius: 10px;
-        padding: 10px 16px;
-        min-height: 70px;
+        padding: 12px 18px;
+        min-height: 86px;
+        overflow: visible;
       }
 
       .brand-logo {
-        height: 40px;
-        width: 230px;
+        height: 56px;
+        width: 255px;
+        max-width: 44vw;
         object-fit: contain;
         object-position: left center;
         display: block;
+        flex: 0 0 auto;
       }
 
       .brand-version {
@@ -107,8 +110,8 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        width: 340px;
-        flex: 0 0 340px;
+        width: 360px;
+        flex: 0 0 360px;
         font-size: 13px;
         height: 100%;
         overflow: auto;
@@ -350,6 +353,8 @@
           border-radius: 0;
         }
         body { overflow: auto; }
+        .brand-bar { min-height: 76px; padding: 10px 12px; }
+        .brand-logo { height: 48px; width: 210px; max-width: 70vw; }
         .graph-container {
           width: 100%;
           max-width: none;
@@ -463,9 +468,9 @@
     <div class="version-tag" id="versionTag">Plano Cartesiano Interativo • V1</div>
 
     <script>
-      const APP_VERSION = "V1";
-      const STORAGE_KEY = "planoCartesianoInterativoV1";
-      const ATELIER_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="160" viewBox="0 0 720 160"><rect width="720" height="160" rx="24" fill="#ffffff"/><text x="34" y="74" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700" fill="#111111">Atelier</text><text x="34" y="124" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#b0174f">Function</text><path d="M386 108 C430 18 493 18 535 108 S642 198 686 108" fill="none" stroke="#111111" stroke-width="8" stroke-linecap="round"/><circle cx="386" cy="108" r="8" fill="#b0174f"/><circle cx="535" cy="108" r="8" fill="#b0174f"/><circle cx="686" cy="108" r="8" fill="#b0174f"/></svg>`;
+      const APP_VERSION = "V1.3";
+      const STORAGE_KEY = "planoCartesianoInterativoV13";
+      const ATELIER_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="220" viewBox="0 0 720 220"><rect width="720" height="220" rx="24" fill="#ffffff"/><text x="34" y="88" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#111111">Atelier</text><text x="34" y="142" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="700" fill="#b0174f">Function</text><path d="M386 124 C430 34 493 34 535 124 S642 214 686 124" fill="none" stroke="#111111" stroke-width="8" stroke-linecap="round"/><circle cx="386" cy="124" r="8" fill="#b0174f"/><circle cx="535" cy="124" r="8" fill="#b0174f"/><circle cx="686" cy="124" r="8" fill="#b0174f"/></svg>`;
       const ATELIER_LOGO_DATA = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ATELIER_LOGO_SVG);
 
       let zoomLevel = 1;
@@ -900,40 +905,47 @@
           if (selected) {
             ctx.save();
             ctx.beginPath();
-            ctx.arc(screen.x, screen.y, 10, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(31, 120, 255, 0.20)";
+            ctx.arc(screen.x, screen.y, 12, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(31, 120, 255, 0.22)";
             ctx.fill();
             ctx.restore();
           }
 
           ctx.beginPath();
-          ctx.arc(screen.x, screen.y, 5.8, 0, Math.PI * 2);
-          ctx.fillStyle = selected ? "orange" : "#1f78ff";
+          ctx.arc(screen.x, screen.y, 6.5, 0, Math.PI * 2);
+          ctx.fillStyle = selected ? "#ffb000" : "#1f78ff";
           ctx.fill();
-          ctx.strokeStyle = selected ? "#0058ff" : "black";
-          ctx.lineWidth = selected ? 2.5 : 1;
+          ctx.strokeStyle = selected ? "#0058ff" : "#111";
+          ctx.lineWidth = selected ? 3 : 1.2;
           ctx.stroke();
 
-          const label = `P${index + 1} (${formatNumber(point.x)}, ${formatNumber(point.y)})`;
+          const pointLabel = `P${index + 1}`;
+          const coordLabel = `(${formatNumber(point.x)}, ${formatNumber(point.y)})`;
           ctx.save();
-          ctx.font = selected ? "bold 12px Arial" : "12px Arial";
-          const metrics = ctx.measureText(label);
-          const paddingX = 6;
-          const boxW = metrics.width + paddingX * 2;
-          const boxH = 20;
+          ctx.font = selected ? "bold 13px Arial" : "bold 13px Arial";
+          const labelW = ctx.measureText(pointLabel).width;
+          ctx.font = "12px Arial";
+          const coordW = ctx.measureText(coordLabel).width;
+          const paddingX = 7;
+          const paddingY = 5;
+          const lineGap = 3;
+          const boxW = Math.max(labelW, coordW) + paddingX * 2;
+          const boxH = 36;
           const candidateOffsets = [
-            { dx: 12, dy: -28 },
-            { dx: 12, dy: 12 },
-            { dx: -boxW - 12, dy: -28 },
-            { dx: -boxW - 12, dy: 12 },
-            { dx: -boxW / 2, dy: -44 },
-            { dx: -boxW / 2, dy: 20 },
+            { dx: 13, dy: -40 },
+            { dx: 13, dy: 12 },
+            { dx: -boxW - 13, dy: -40 },
+            { dx: -boxW - 13, dy: 12 },
+            { dx: -boxW / 2, dy: -54 },
+            { dx: -boxW / 2, dy: 22 },
+            { dx: 18, dy: -8 },
+            { dx: -boxW - 18, dy: -8 },
           ];
           let chosen = null;
           for (const off of candidateOffsets) {
             const rect = {
-              x: Math.min(Math.max(screen.x + off.dx, 4), canvas.width - boxW - 4),
-              y: Math.min(Math.max(screen.y + off.dy, 4), canvas.height - boxH - 4),
+              x: Math.min(Math.max(screen.x + off.dx, 5), canvas.width - boxW - 5),
+              y: Math.min(Math.max(screen.y + off.dy, 5), canvas.height - boxH - 5),
               w: boxW,
               h: boxH,
             };
@@ -944,23 +956,26 @@
           }
           if (!chosen) {
             chosen = {
-              x: Math.min(Math.max(screen.x + 12, 4), canvas.width - boxW - 4),
-              y: Math.min(Math.max(screen.y + 12 + index * 8, 4), canvas.height - boxH - 4),
+              x: Math.min(Math.max(screen.x + 14, 5), canvas.width - boxW - 5),
+              y: Math.min(Math.max(screen.y + 14 + index * 12, 5), canvas.height - boxH - 5),
               w: boxW,
               h: boxH,
             };
           }
           occupiedLabels.push(chosen);
 
-          ctx.fillStyle = selected ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.92)";
-          ctx.strokeStyle = selected ? "#0058ff" : "#cfcfcf";
-          ctx.lineWidth = selected ? 1.5 : 1;
+          ctx.fillStyle = selected ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.95)";
+          ctx.strokeStyle = selected ? "#0058ff" : "#c9c9c9";
+          ctx.lineWidth = selected ? 1.6 : 1;
           ctx.beginPath();
-          ctx.roundRect(chosen.x, chosen.y, boxW, boxH, 5);
+          ctx.roundRect(chosen.x, chosen.y, boxW, boxH, 7);
           ctx.fill();
           ctx.stroke();
           ctx.fillStyle = "#111";
-          ctx.fillText(label, chosen.x + paddingX, chosen.y + 14);
+          ctx.font = "bold 13px Arial";
+          ctx.fillText(pointLabel, chosen.x + paddingX, chosen.y + paddingY + 10);
+          ctx.font = "12px Arial";
+          ctx.fillText(coordLabel, chosen.x + paddingX, chosen.y + paddingY + 10 + 12 + lineGap);
           ctx.restore();
         });
       }
@@ -1266,7 +1281,7 @@
       }
 
       function splitPdfLine(text, maxChars = 86) {
-        const words = escapePdfText(text).split(/\s+/).filter(Boolean);
+        const words = String(text ?? "").split(/\s+/).filter(Boolean);
         const lines = [];
         let current = "";
         words.forEach((word) => {
@@ -1346,10 +1361,18 @@
         const imgBytes = dataURLToBinary(graphDataUrl);
         const pageW = 841.89;
         const pageH = 595.28;
-        const imgW = 385;
-        const imgH = 385;
-        const imgX = 34;
-        const imgY = 92;
+        const margin = 30;
+        const graphMaxW = 500;
+        const graphMaxH = 360;
+        const aspect = canvas.width / canvas.height;
+        let imgW = graphMaxW;
+        let imgH = imgW / aspect;
+        if (imgH > graphMaxH) {
+          imgH = graphMaxH;
+          imgW = imgH * aspect;
+        }
+        const imgX = margin;
+        const imgY = 145;
 
         const ops = [];
         const addText = (text, x, y, size = 10, font = "F1") => {
@@ -1361,36 +1384,43 @@
         const addRect = (x, y, w, h) => {
           ops.push(`${x} ${y} ${w} ${h} re S`);
         };
-        const addLogo = (x, y, scale = 0.72) => {
+        const addLogo = (x, y, scale = 0.8) => {
           ops.push(`0 0 0 rg`);
-          addText("Atelier", x, y, 20 * scale, "F2");
+          addText("Atelier", x, y, 21 * scale, "F2");
           ops.push(`0.69 0.09 0.31 rg`);
-          addText("Function", x, y - 20 * scale, 21 * scale, "F2");
-          ops.push(`0 0 0 RG 2 w`);
-          const cx = x + 96 * scale;
-          const cy = y - 10 * scale;
-          ops.push(`${cx} ${cy} m ${cx + 28 * scale} ${cy + 52 * scale} ${cx + 70 * scale} ${cy + 52 * scale} ${cx + 98 * scale} ${cy} c S`);
+          addText("Function", x, y - 18 * scale, 22 * scale, "F2");
+          ops.push(`0 0 0 RG 1.8 w`);
+          const cx = x + 108 * scale;
+          const cy = y - 9 * scale;
+          ops.push(`${cx} ${cy} m ${cx + 30 * scale} ${cy + 48 * scale} ${cx + 74 * scale} ${cy + 48 * scale} ${cx + 104 * scale} ${cy} c S`);
+          ops.push(`${cx + 104 * scale} ${cy} m ${cx + 132 * scale} ${cy - 48 * scale} ${cx + 178 * scale} ${cy - 48 * scale} ${cx + 206 * scale} ${cy} c S`);
           ops.push(`0.69 0.09 0.31 rg`);
-          [[0,0],[98,0],[150,0]].forEach(([dx,dy]) => {
-            ops.push(`${cx + dx * scale - 2.5} ${cy + dy * scale - 2.5} 5 5 re f`);
+          [[0,0],[104,0],[206,0]].forEach(([dx,dy]) => {
+            ops.push(`${cx + dx * scale - 2.7} ${cy + dy * scale - 2.7} 5.4 5.4 re f`);
           });
           ops.push(`0 0 0 rg 0 0 0 RG 1 w`);
         };
 
-        addLogo(42, 553, 0.72);
-        addText("Plano Cartesiano Interativo", 240, 552, 18, "F2");
-        addText(`Versao ${APP_VERSION}`, 240, 532, 10, "F2");
-        addText(`Exportado em: ${report.exportedAt}`, 650, 532, 9);
-        addLine(34, 515, 808, 515);
+        // Cabeçalho
+        addLogo(margin, 555, 0.72);
+        addText("Plano Cartesiano Interativo", 245, 555, 18, "F2");
+        addText(`Atelier Function - Versao ${APP_VERSION}`, 245, 534, 10.5, "F2");
+        addText(`Exportado em: ${report.exportedAt}`, 650, 534, 9);
+        addLine(margin, 514, pageW - margin, 514);
 
-        addText(`Equacao da reta: ${report.equation}`, 34, 493, 12, "F2");
-        addText("Grafico", imgX, imgY + imgH + 12, 11, "F2");
-        ops.push(`q\n${imgW} 0 0 ${imgH} ${imgX} ${imgY} cm\n/Im1 Do\nQ`);
+        // Equação e gráfico
+        addText(`Equacao da reta: ${report.equation}`, margin, 493, 13, "F2");
+        addText("Grafico", margin, 474, 12, "F2");
+        ops.push(`q
+${imgW} 0 0 ${imgH} ${imgX} ${imgY} cm
+/Im1 Do
+Q`);
 
-        let xInfo = 448;
-        let y = 492;
+        // Análise matemática à direita
+        const xInfo = 555;
+        let y = 493;
         addText("Analise matematica", xInfo, y, 13, "F2");
-        y -= 20;
+        y -= 21;
         const mainLines = [
           report.tangentText,
           report.angleText,
@@ -1402,45 +1432,46 @@
           report.linearText,
         ];
         mainLines.forEach((line) => {
-          splitPdfLine(line, 58).forEach((part) => {
-            if (y > 245) {
-              addText(part, xInfo, y, 9.2);
+          splitPdfLine(line, 42).forEach((part) => {
+            if (y > 218) {
+              addText(part, xInfo, y, 9.3);
               y -= 12;
             }
           });
-          y -= 2;
+          y -= 3;
         });
 
-        addText("Coordenadas dos pontos criados", xInfo, 212, 13, "F2");
-        const startY = 190;
-        const x0 = xInfo;
-        const colW = [72, 130, 130];
+        // Tabela de pontos
+        addText("Coordenadas dos pontos criados", margin, 112, 13, "F2");
+        const startY = 90;
+        const x0 = margin;
+        const colW = [80, 120, 120];
         const rowH = 17;
         addRect(x0, startY, colW[0] + colW[1] + colW[2], rowH);
         addLine(x0 + colW[0], startY, x0 + colW[0], startY + rowH);
         addLine(x0 + colW[0] + colW[1], startY, x0 + colW[0] + colW[1], startY + rowH);
-        addText("Ponto", x0 + 10, startY + 5, 9, "F2");
-        addText("x", x0 + colW[0] + 58, startY + 5, 9, "F2");
-        addText("y", x0 + colW[0] + colW[1] + 58, startY + 5, 9, "F2");
+        addText("Ponto", x0 + 12, startY + 5, 9, "F2");
+        addText("x", x0 + colW[0] + 55, startY + 5, 9, "F2");
+        addText("y", x0 + colW[0] + colW[1] + 55, startY + 5, 9, "F2");
 
-        const maxRows = Math.min(report.points.length, 8);
+        const maxRows = Math.min(report.points.length, 5);
         for (let i = 0; i < maxRows; i++) {
           const p = report.points[i];
           const ry = startY - rowH * (i + 1);
           addRect(x0, ry, colW[0] + colW[1] + colW[2], rowH);
           addLine(x0 + colW[0], ry, x0 + colW[0], ry + rowH);
           addLine(x0 + colW[0] + colW[1], ry, x0 + colW[0] + colW[1], ry + rowH);
-          addText(p.label, x0 + 12, ry + 5, 8.8);
+          addText(p.label, x0 + 14, ry + 5, 8.8);
           addText(formatNumber(p.x), x0 + colW[0] + 48, ry + 5, 8.8);
           addText(formatNumber(p.y), x0 + colW[0] + colW[1] + 48, ry + 5, 8.8);
         }
         if (report.points.length > maxRows) {
-          addText(`Mais ${report.points.length - maxRows} ponto(s) registrados na tela.`, x0, startY - rowH * (maxRows + 1) - 12, 8.5);
+          addText(`Mais ${report.points.length - maxRows} ponto(s) registrados na tela.`, x0 + 340, 78, 8.5);
         }
 
-        addLine(34, 38, 808, 38);
-        addText(`Documento gerado pelo Atelier Function ${APP_VERSION}`, 34, 22, 8.8);
-        addText("Plano Cartesiano Interativo", 660, 22, 8.8);
+        addLine(margin, 38, pageW - margin, 38);
+        addText(`Documento gerado pelo Atelier Function ${APP_VERSION}`, margin, 22, 8.8);
+        addText("Plano Cartesiano Interativo", 680, 22, 8.8);
 
         const content = ops.join("\n");
         const enc = new TextEncoder();
