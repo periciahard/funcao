@@ -548,7 +548,7 @@
               <button type="button" onclick="drawLineFromPoints()">Traçar reta</button>
               <span class="help-wrap"><button class="help-btn" type="button" aria-label="Ajuda sobre traçar reta">?</button><span class="help-tooltip">A reta é construída a partir dos pontos informados, permitindo relacionar os registros tabular, gráfico e algébrico.</span></span>
             </div>
-            <button type="button" onclick="deleteSelectedPoint()">Apagar selecionado</button>
+            <button type="button" onclick="deleteSelectedPoint()">Apagar selecionados</button>
             <button class="danger" type="button" onclick="clearPoints()">Apagar todos</button>
             <input id="projectFileInput" type="file" accept=".json,application/json" style="display:none" onchange="importProject(event)" />
           </div>
@@ -864,7 +864,7 @@
 
         if (selectedPoints.includes(clickedPoint)) {
           selectedPoints = selectedPoints.filter((p) => p !== clickedPoint);
-        } else if (selectedPoints.length < 2) {
+        } else {
           selectedPoints.push(clickedPoint);
         }
 
@@ -1230,6 +1230,14 @@
       }
 
       function drawLineFromPoints() {
+        if (selectedPoints.length < 2) {
+          alert("Selecione dois pontos com duplo clique para traçar a reta.");
+          return;
+        }
+        if (selectedPoints.length > 2) {
+          alert("Para traçar uma reta, deixe exatamente dois pontos selecionados. Dê duplo clique nos pontos excedentes para desmarcá-los.");
+          return;
+        }
         if (!calculateLineFromSelectedPoints()) return;
         refreshAll();
         saveState();
@@ -1320,20 +1328,34 @@
         const theta = Math.atan2(p2.y - p1.y, p2.x - p1.x);
         if (!Number.isFinite(theta)) return;
         const screenEndAngle = -theta;
-        const radius = 34;
-        const margin = radius + 24;
 
-        // Evita que o arco e a letra α sejam cortados nas bordas do canvas.
-        const safeOrigin = {
-          x: Math.min(Math.max(originScreen.x, margin), canvas.width - margin),
-          y: Math.min(Math.max(originScreen.y, margin), canvas.height - margin),
-        };
+        // O ângulo deve acompanhar o ponto no plano cartesiano.
+        // Por isso, a origem do arco NÃO pode ser presa a uma posição fixa da tela.
+        // Se o ponto-base sair da área visível, o ângulo simplesmente deixa de ser desenhado.
+        const offscreenMargin = 45;
+        if (
+          originScreen.x < -offscreenMargin ||
+          originScreen.x > canvas.width + offscreenMargin ||
+          originScreen.y < -offscreenMargin ||
+          originScreen.y > canvas.height + offscreenMargin
+        ) {
+          return;
+        }
+
+        const distanceToEdge = Math.min(
+          originScreen.x,
+          canvas.width - originScreen.x,
+          originScreen.y,
+          canvas.height - originScreen.y
+        );
+        const radius = Math.max(16, Math.min(34, distanceToEdge - 8));
+        if (radius < 14) return;
 
         ctx.save();
         ctx.strokeStyle = "#d6296b";
         ctx.lineWidth = 2.2;
         ctx.beginPath();
-        ctx.arc(safeOrigin.x, safeOrigin.y, radius, 0, screenEndAngle, screenEndAngle < 0);
+        ctx.arc(originScreen.x, originScreen.y, radius, 0, screenEndAngle, screenEndAngle < 0);
         ctx.stroke();
 
         const label = "α";
@@ -1342,8 +1364,10 @@
         const labelW = ctx.measureText(label).width;
         const labelH = 28;
         const mid = screenEndAngle / 2;
-        let lx = safeOrigin.x + Math.cos(mid) * (radius + 22);
-        let ly = safeOrigin.y + Math.sin(mid) * (radius + 22);
+        let lx = originScreen.x + Math.cos(mid) * (radius + 22);
+        let ly = originScreen.y + Math.sin(mid) * (radius + 22);
+
+        // Só a etiqueta é limitada à área visível; o arco continua preso ao ponto real.
         lx = Math.min(Math.max(lx, 18), canvas.width - labelW - 18);
         ly = Math.min(Math.max(ly, labelH + 12), canvas.height - 18);
 
@@ -1434,25 +1458,22 @@
 
       function deleteSelectedPoint() {
         if (selectedPoints.length === 0) {
-          alert("Selecione um ponto com dois cliques antes de apagar.");
+          alert("Selecione um ou mais pontos com duplo clique antes de apagar.");
           return;
         }
 
-        if (selectedPoints.length > 1) {
-          alert("Para apagar apenas um ponto, deixe somente um ponto selecionado. Dê dois cliques em um dos pontos para desmarcá-lo.");
-          return;
-        }
+        const selectedSet = new Set(selectedPoints);
+        const previousLength = points.length;
+        points = points.filter((point) => !selectedSet.has(point));
 
-        const pointToDelete = selectedPoints[0];
-        const deleteIndex = points.indexOf(pointToDelete);
-        if (deleteIndex < 0) {
+        if (points.length === previousLength) {
           selectedPoints = [];
-          alert("O ponto selecionado não foi encontrado. Selecione novamente o ponto no gráfico.");
+          alert("Os pontos selecionados não foram encontrados. Selecione novamente no gráfico.");
           refreshAll();
           saveState();
           return;
         }
-        points.splice(deleteIndex, 1);
+
         selectedPoints = [];
         hoveredPoint = null;
         lineDrawn = false;
