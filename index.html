@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plano Cartesiano Interativo</title>
+    <title>Atelier Digit@s</title>
     <style>
       :root {
         --bg: #f5f7fb;
@@ -256,15 +256,17 @@
         bottom: calc(100% + 8px);
         transform: translateX(-50%);
         width: min(320px, 74vw);
-        background: #111827;
-        color: #fff;
+        background: #fff;
+        color: #111827;
+        border: 1px solid #cbd5e1;
         border-radius: 10px;
         padding: 8px;
         font-size: 12px;
         line-height: 1.35;
+        font-weight: 400 !important;
         text-align: left;
         z-index: 2000;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        box-shadow: 0 8px 24px rgba(15,23,42,0.18);
       }
       .help-tooltip::after {
         content: "";
@@ -274,7 +276,7 @@
         transform: translateX(-50%);
         border-width: 6px;
         border-style: solid;
-        border-color: #111827 transparent transparent transparent;
+        border-color: #fff transparent transparent transparent;
       }
       .help-wrap:hover .help-tooltip, .help-wrap:focus-within .help-tooltip { display: block; }
       #cursorTooltip {
@@ -417,10 +419,183 @@
         overflow-wrap: anywhere;
         word-break: normal;
         pointer-events: none;
+        font-weight: 400 !important;
         z-index: 99999 !important;
       }
       .help-tooltip::after { display: none !important; }
+      .help-tooltip, .help-tooltip * { font-weight: 400 !important; }
       .help-wrap.tooltip-open .help-tooltip { display: block; }
+
+      /* V42: tooltips das interrogações com fundo branco e texto preto. */
+      .help-tooltip {
+        background: #ffffff !important;
+        color: #111827 !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18) !important;
+      }
+      .help-tooltip::after { border-color: #ffffff transparent transparent transparent !important; }
+
+      /* V37: assinatura visual Atelier Digit@s compacta na coluna direita. */
+      .side-brand {
+        margin-top: auto;
+        padding: 4px 6px 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        max-height: 44px;
+        overflow: hidden;
+      }
+      .side-brand img {
+        max-width: 210px;
+        max-height: 38px;
+        object-fit: contain;
+        opacity: 0.9;
+      }
+
+
+
+      /* Tela de entrada */
+      .intro-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(15, 23, 42, 0.62);
+        backdrop-filter: blur(2px);
+      }
+      .intro-overlay.hidden { display: none; }
+      .intro-card {
+        position: relative;
+        width: min(1080px, 94vw);
+        max-height: 92vh;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+      .intro-card img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 92vh;
+        object-fit: contain;
+        background: #fff;
+      }
+      .intro-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.22);
+        background: rgba(255, 255, 255, 0.95);
+        color: #0f172a;
+        font-size: 24px;
+        line-height: 1;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
+      }
+      .intro-close:hover { background: #f8fafc; transform: translateY(-1px); }
+
+
+
+      /* V41: coluna direita compacta, logo no rodapé e botões sem corte. */
+      .controls {
+        gap: 4px !important;
+        overflow: hidden !important;
+        padding-bottom: 0 !important;
+      }
+      .expression {
+        min-height: 34px !important;
+        padding: 3px 6px !important;
+        font-size: clamp(16px, 1vw, 20px) !important;
+      }
+      .tangent-box,
+      .explanation-box {
+        padding: 4px 7px !important;
+        font-size: 11.4px !important;
+        line-height: 1.14 !important;
+      }
+      .tangent-box h3,
+      .explanation-box h3,
+      .table h3 {
+        font-size: 12px !important;
+        margin-bottom: 3px !important;
+      }
+      .explanation-box p { margin: 1px 0 !important; }
+      .sliders {
+        padding: 4px 7px !important;
+      }
+      .slider-container {
+        grid-template-columns: 70px 1fr 32px !important;
+        gap: 4px !important;
+        margin: 2px 0 !important;
+      }
+      .slider-container select,
+      .slider-container input[type="range"] { min-height: 26px !important; }
+      .table {
+        max-height: 108px !important;
+        padding: 4px 7px 5px !important;
+        overflow: hidden !important;
+      }
+      .points-scroll { max-height: 64px !important; overflow-y: visible !important; }
+      .table.scrollable .points-scroll { max-height: 64px !important; overflow-y: auto !important; }
+      table { font-size: 11px !important; }
+      th, td { padding: 2px 4px !important; }
+      .point-input {
+        padding: 4px !important;
+        gap: 4px !important;
+      }
+      .point-input input,
+      .point-input button {
+        height: 27px !important;
+        padding: 3px 6px !important;
+      }
+      .action-panel {
+        grid-template-columns: 1fr !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        overflow: visible !important;
+      }
+      .action-panel .button-help {
+        grid-template-columns: 1fr auto !important;
+        gap: 4px !important;
+      }
+      .action-panel button {
+        min-height: 25px !important;
+        height: 25px !important;
+        padding: 2px 6px !important;
+        font-size: 11.5px !important;
+        line-height: 1 !important;
+      }
+      .action-panel .danger,
+      button.danger {
+        border-color: #999 !important;
+        color: #0f172a !important;
+        background: #fff !important;
+      }
+      .action-panel .danger:hover,
+      button.danger:hover { background: #f8fafc !important; }
+      .side-brand {
+        order: 99 !important;
+        margin-top: auto !important;
+        min-height: 38px !important;
+        max-height: 48px !important;
+        padding: 2px 6px 1px !important;
+      }
+      .side-brand img {
+        max-width: 175px !important;
+        max-height: 36px !important;
+        object-fit: contain !important;
+      }
+      .intro-close { display: none !important; }
+      .intro-overlay, .intro-card, .intro-card img { cursor: pointer; }
 
       @media (max-width: 980px) {
         body { overflow: auto; }
@@ -433,12 +608,74 @@
         .controls { overflow: visible; }
         .graph-tip { display: none; }
       }
+
+      /* V40: logo somente no rodapé da coluna direita e botão Apagar todos sempre visível. */
+      .controls {
+        overflow: hidden !important;
+      }
+      .table {
+        order: 5 !important;
+        flex: 0 0 auto !important;
+        max-height: 118px !important;
+      }
+      .table.scrollable .points-scroll {
+        max-height: 74px !important;
+        overflow-y: auto !important;
+      }
+      .point-input {
+        order: 6 !important;
+        flex: 0 0 auto !important;
+      }
+      .action-panel {
+        order: 7 !important;
+        flex: 0 0 auto !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 5px !important;
+        padding: 5px !important;
+        overflow: visible !important;
+      }
+      .action-panel .button-help {
+        display: grid !important;
+        grid-template-columns: 1fr auto !important;
+        gap: 5px !important;
+      }
+      .action-panel .button-help button:first-child,
+      .action-panel > button {
+        width: 100% !important;
+        min-height: 26px !important;
+        padding: 3px 6px !important;
+      }
+      .action-panel .danger {
+        display: block !important;
+        grid-column: 1 / -1 !important;
+      }
+      .side-brand {
+        order: 99 !important;
+        flex: 0 0 auto !important;
+        margin-top: auto !important;
+        padding: 3px 6px 1px !important;
+        min-height: 30px !important;
+        max-height: 36px !important;
+      }
+      .side-brand img {
+        max-height: 32px !important;
+        max-width: 180px !important;
+      }
+
     </style>
   </head>
   <body>
+
+    <div class="intro-overlay" id="introOverlay" role="dialog" aria-modal="true" aria-label="Tela de entrada Atelier Digit@s">
+      <div class="intro-card">
+        <button class="intro-close" id="introCloseBtn" type="button" aria-label="Fechar tela de entrada">×</button>
+        <img src="assets/tela-entrada.png" alt="Atelier Function — Micromundo para exploração e articulação dinâmica de representações da função afim" />
+      </div>
+    </div>
     <div class="app-shell">
       <header class="app-header">
-        <div class="header-title">Plano Cartesiano Interativo</div>
+        <div class="header-title">Atelier Digit@s</div>
         <div class="header-actions" aria-label="Ações principais">
           <button id="createPointBtn" class="btn-soft" type="button">+ Novo ponto</button>
           <span class="help-wrap">
@@ -446,12 +683,12 @@
             <span class="help-tooltip">Clique em “Novo ponto” e depois clique no plano para inserir um ponto. Para mover o plano, arraste uma área vazia do gráfico.</span>
           </span>
           <button class="primary-dark" type="button" onclick="exportPDF()">Exportar PDF</button>
-          <button type="button" onclick="exportProject()">Exportar projeto</button>
+          <button class="primary-dark" type="button" onclick="exportProject()">Exportar projeto</button>
           <span class="help-wrap">
             <button class="help-btn" type="button" aria-label="Ajuda sobre exportar projeto">?</button>
             <span class="help-tooltip">Salva os pontos, a reta e as configurações atuais para continuar a atividade posteriormente.</span>
           </span>
-          <button type="button" onclick="document.getElementById('projectFileInput').click()">Importar projeto</button>
+          <button class="primary-dark" type="button" onclick="document.getElementById('projectFileInput').click()">Importar projeto</button>
           <span class="help-wrap">
             <button class="help-btn" type="button" aria-label="Ajuda sobre importar projeto">?</button>
             <span class="help-tooltip">Carrega um projeto salvo anteriormente, restaurando os dados e representações da atividade.</span>
@@ -553,10 +790,14 @@
             <input id="projectFileInput" type="file" accept=".json,application/json" style="display:none" onchange="importProject(event)" />
           </div>
 
+          <div class="side-brand" aria-label="Atelier Digit@s">
+            <img src="assets/atelier-digitas-logo.png" alt="Atelier Digit@s" />
+          </div>
+
         </aside>
       </main>
 
-      <footer class="footer-note">© Atelier Function. Todos os direitos reservados.</footer>
+      <footer class="footer-note">© Atelier Digit@s. Todos os direitos reservados.</footer>
     </div>
 
     <script>
@@ -756,10 +997,9 @@
 
         const tangent = deltaY / deltaX;
         tangentInfo.innerHTML = `
-          <div>Tomando P₁ como o ponto mais à esquerda:</div>
           <div>Δy = y₂ - y₁ = ${formatNumber(deltaY)}</div>
           <div>Δx = x₂ - x₁ = ${formatNumber(deltaX)}</div>
-          <div class="tangent-line">tg(α) = Δy / Δx = ${formatNumber(deltaY)} / ${formatNumber(deltaX)} = ${formatNumber(tangent)}</div>
+          <div class="tangent-line">a = Δy / Δx = ${formatNumber(deltaY)} / ${formatNumber(deltaX)} = ${formatNumber(tangent)}</div>
           <div>Coeficiente angular: a = ${formatNumber(tangent)}</div>
         `;
       }
@@ -1320,66 +1560,23 @@
         ctx.fillText("Δx", (s1.x + sBase.x) / 2 - 8, sBase.y + 16);
         ctx.fillText("Δy", sBase.x + 6, (sBase.y + s2.y) / 2);
 
-        drawAngleArc(s1, p1, p2);
+        // Desenha apenas o arco do ângulo, sem a letra alfa.
+        drawAngleArc(s1, sBase, s2);
         ctx.restore();
       }
 
-      function drawAngleArc(originScreen, p1, p2) {
-        const theta = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-        if (!Number.isFinite(theta)) return;
-        const screenEndAngle = -theta;
-
-        // O ângulo deve acompanhar o ponto no plano cartesiano.
-        // Por isso, a origem do arco NÃO pode ser presa a uma posição fixa da tela.
-        // Se o ponto-base sair da área visível, o ângulo simplesmente deixa de ser desenhado.
-        const offscreenMargin = 45;
-        if (
-          originScreen.x < -offscreenMargin ||
-          originScreen.x > canvas.width + offscreenMargin ||
-          originScreen.y < -offscreenMargin ||
-          originScreen.y > canvas.height + offscreenMargin
-        ) {
-          return;
-        }
-
-        const distanceToEdge = Math.min(
-          originScreen.x,
-          canvas.width - originScreen.x,
-          originScreen.y,
-          canvas.height - originScreen.y
-        );
-        const radius = Math.max(16, Math.min(34, distanceToEdge - 8));
-        if (radius < 14) return;
-
+      function drawAngleArc(originScreen, baseScreen, lineScreen) {
+        const radius = 36;
+        const startAngle = Math.atan2(baseScreen.y - originScreen.y, baseScreen.x - originScreen.x);
+        const endAngle = Math.atan2(lineScreen.y - originScreen.y, lineScreen.x - originScreen.x);
+        const anticlockwise = endAngle < startAngle;
         ctx.save();
         ctx.strokeStyle = "#d6296b";
-        ctx.lineWidth = 2.2;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([]);
         ctx.beginPath();
-        ctx.arc(originScreen.x, originScreen.y, radius, 0, screenEndAngle, screenEndAngle < 0);
+        ctx.arc(originScreen.x, originScreen.y, radius, startAngle, endAngle, anticlockwise);
         ctx.stroke();
-
-        const label = "α";
-        ctx.font = "850 22px Inter, Segoe UI, Arial";
-        ctx.textBaseline = "alphabetic";
-        const labelW = ctx.measureText(label).width;
-        const labelH = 28;
-        const mid = screenEndAngle / 2;
-        let lx = originScreen.x + Math.cos(mid) * (radius + 22);
-        let ly = originScreen.y + Math.sin(mid) * (radius + 22);
-
-        // Só a etiqueta é limitada à área visível; o arco continua preso ao ponto real.
-        lx = Math.min(Math.max(lx, 18), canvas.width - labelW - 18);
-        ly = Math.min(Math.max(ly, labelH + 12), canvas.height - 18);
-
-        ctx.fillStyle = "rgba(255,255,255,0.96)";
-        ctx.strokeStyle = "rgba(214,41,107,0.58)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(lx - 9, ly - labelH + 1, labelW + 18, labelH + 9, 9);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = "#d6296b";
-        ctx.fillText(label, lx, ly);
         ctx.restore();
       }
 
@@ -1503,7 +1700,7 @@
 
       function getProjectData() {
         return {
-          app: "Atelier Function - Plano Cartesiano Interativo",
+          app: "Atelier Digit@s",
           schemaVersion: 1,
           exportedAt: new Date().toISOString(),
           points: points.map((point, index) => ({
@@ -1548,7 +1745,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `atelier-function-plano-cartesiano-${timestamp}.json`;
+        link.download = `atelier-digitas-${timestamp}.json`;
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -1743,8 +1940,8 @@
         const linearText = document.getElementById("linearExplanation").textContent;
 
         const report = {
-          title: "Plano Cartesiano Interativo",
-          subtitle: `Atelier Function`,
+          title: "Atelier Digit@s",
+          subtitle: ``,
           exportedAt: now,
           equation,
           slope: Number.isFinite(a) ? a : null,
@@ -1752,7 +1949,7 @@
           slopeText,
           linearText,
           tangentText: "Coeficiente angular: selecione dois pontos e trace a reta para calcular.",
-          angleText: "Ângulo α: não calculado.",
+          angleText: "Ângulo de inclinação: não calculado.",
           points: points.map((p, i) => ({ label: `P${i + 1}`, x: p.x, y: p.y })),
         };
 
@@ -1764,12 +1961,12 @@
           const dy = p2.y - p1.y;
           if (Math.abs(dx) < 0.000001) {
             report.tangentText = "Coeficiente angular: reta vertical; Δx = 0; tangente não definida.";
-            report.angleText = "Ângulo α: 90 graus.";
+            report.angleText = "Ângulo de inclinação: 90 graus.";
           } else {
             const tangent = dy / dx;
             const angle = Math.atan(tangent) * 180 / Math.PI;
-            report.tangentText = `Coeficiente angular: Δy = ${formatNumber(dy)}; Δx = ${formatNumber(dx)}; tg(α) = ${formatNumber(tangent)}.`;
-            report.angleText = `Ângulo α aproximado: ${formatNumber(angle)} graus.`;
+            report.tangentText = `Coeficiente angular: Δy = ${formatNumber(dy)}; Δx = ${formatNumber(dx)}; a = ${formatNumber(tangent)}.`;
+            report.angleText = `Ângulo de inclinação aproximado: ${formatNumber(angle)} graus.`;
           }
         }
 
@@ -1875,7 +2072,7 @@
 
         // Cabeçalho sem logos.
         pctx.font = "bold 36px Arial";
-        pctx.fillText("Plano Cartesiano Interativo", margin, 62);
+        pctx.fillText("Atelier Digit@s", margin, 62);
         pctx.font = "17px Arial";
         pctx.fillText(`Exportado em: ${report.exportedAt}`, margin, 94);
         pctx.beginPath();
@@ -1923,15 +2120,17 @@
           y = wrapCanvasText(pctx, line, infoX, y, pageW - infoX - margin, 23) + 7;
         });
 
-        // Tabela de pontos.
-        const tableY = 985;
+        // Tabela de pontos posicionada na coluna direita, logo abaixo da análise.
+        const tableX = infoX;
+        const tableY = Math.min(Math.max(y + 32, 625), pageH - 310);
         pctx.font = "bold 24px Arial";
-        pctx.fillText("Representação tabular", margin, tableY - 25);
-        const tableX = margin;
-        const colW = [150, 230, 230];
-        const rowH = 35;
-        const tableW = colW.reduce((a, b) => a + b, 0);
+        pctx.fillText("Representação tabular", tableX, tableY - 25);
+        const colW = [120, 185, 185];
+        const rowH = 34;
+        const tableW = colW.reduce((acc, value) => acc + value, 0);
         const drawTableRow = (rowY, values, bold = false) => {
+          pctx.strokeStyle = "#111";
+          pctx.lineWidth = 1.4;
           pctx.strokeRect(tableX, rowY, tableW, rowH);
           pctx.beginPath();
           pctx.moveTo(tableX + colW[0], rowY);
@@ -1940,17 +2139,17 @@
           pctx.lineTo(tableX + colW[0] + colW[1], rowY + rowH);
           pctx.stroke();
           pctx.font = bold ? "bold 16px Arial" : "16px Arial";
-          pctx.fillText(values[0], tableX + 22, rowY + 23);
-          pctx.fillText(values[1], tableX + colW[0] + 92, rowY + 23);
-          pctx.fillText(values[2], tableX + colW[0] + colW[1] + 92, rowY + 23);
+          pctx.fillText(values[0], tableX + 18, rowY + 23);
+          pctx.fillText(values[1], tableX + colW[0] + 76, rowY + 23);
+          pctx.fillText(values[2], tableX + colW[0] + colW[1] + 76, rowY + 23);
         };
         drawTableRow(tableY, ["Ponto", "x", "y"], true);
-        report.points.slice(0, 5).forEach((p, i) => {
+        report.points.slice(0, 6).forEach((p, i) => {
           drawTableRow(tableY + rowH * (i + 1), [p.label, formatNumber(p.x), formatNumber(p.y)], false);
         });
-        if (report.points.length > 5) {
+        if (report.points.length > 6) {
           pctx.font = "15px Arial";
-          pctx.fillText(`Mais ${report.points.length - 5} ponto(s) registrados na tela.`, tableX + tableW + 35, tableY + 25);
+          pctx.fillText(`Mais ${report.points.length - 6} ponto(s) registrados na tela.`, tableX, tableY + rowH * 8 + 18);
         }
 
         pctx.beginPath();
@@ -1958,8 +2157,8 @@
         pctx.lineTo(pageW - margin, pageH - 55);
         pctx.stroke();
         pctx.font = "15px Arial";
-        pctx.fillText("Documento gerado pelo Plano Cartesiano Interativo", margin, pageH - 25);
-        pctx.fillText("Plano Cartesiano Interativo", pageW - 300, pageH - 25);
+        pctx.fillText("Documento gerado pelo Atelier Digit@s", margin, pageH - 25);
+        pctx.fillText("Atelier Digit@s", pageW - 230, pageH - 25);
 
         const pageDataUrl = page.toDataURL("image/jpeg", 0.96);
         return buildPdfFromPageImage(pageDataUrl, pageW, pageH);
@@ -1975,7 +2174,7 @@
         const url = URL.createObjectURL(pdf);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `plano-cartesiano-atelier-function.pdf`;
+        link.download = `atelier-digitas.pdf`;
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -2049,6 +2248,21 @@
       setupSmartHelpTooltips();
       loadState();
       refreshAll();
+
+      function closeIntroOverlay() {
+        const overlay = document.getElementById("introOverlay");
+        if (overlay) overlay.classList.add("hidden");
+      }
+
+      const introCloseBtn = document.getElementById("introCloseBtn");
+      if (introCloseBtn) {
+        introCloseBtn.addEventListener("click", closeIntroOverlay);
+      }
+      const introOverlay = document.getElementById("introOverlay");
+      if (introOverlay) {
+        introOverlay.addEventListener("click", closeIntroOverlay);
+      }
+
     </script>
   </body>
 </html>
